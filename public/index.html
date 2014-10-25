@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+<head>
+  <title>Socket.IO Workshop</title>
+  <link rel="stylesheet" href="/style.css"/>
+</head>
+<body>
+  <ul class="pages">
+    <li class="login page">
+      <form>
+        <h3 class="title">What's your nickname?</h3>
+        <input class="username" type="text" maxlength="14" />
+      </form>
+    </li>
+    <li class="lobby page">
+      <ul class="messages"></ul>
+      <form>
+        <input class="message" autocomplete="off"/>
+      </form>
+    </li>
+    <li class="room page">
+    </li>
+  </ul>
+  <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/main.js"></script>
+</body>
+</html>
