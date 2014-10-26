@@ -80,11 +80,11 @@ $(function() {
       });
     });
 
-    socket.on('add room', function(room, usernames) {
+    socket.on('room added', function(room, usernames) {
       $rooms.prepend(createRoomNode(room, usernames));
     });
 
-    socket.on('remove room', function(room) {
+    socket.on('room removed', function(room) {
       $rooms.find('.room').each(function(i, r) {
         var $room = $(r);
         if ($room.attr('data-room') === room) {
@@ -96,8 +96,8 @@ $(function() {
 
     function navigateToRoom(room, usernames) {
       socket.off('message');
-      socket.off('add room');
-      socket.off('remove room');
+      socket.off('room added');
+      socket.off('room removed');
       $page.hide();
       $pages.trigger('room', [room, usernames]);
     }
@@ -142,19 +142,15 @@ $(function() {
     $leaveRoom.off('click');
     $leaveRoom.click(function() {
       socket.emit('leave room', room, function(rooms) {
-        socket.off('message');
-        socket.off('join room');
-        socket.off('leave room');
-        $page.hide();
-        $pages.trigger('lobby', [rooms]);
+        backToLobby(rooms);
       });
     });
 
-    socket.on('join room', function(username) {
+    socket.on('user joined', function(username) {
       $users.append(createUserNode(username));
     });
 
-    socket.on('leave room', function(username) {
+    socket.on('user left', function(username) {
       $users.find('.user').each(function(i, user) {
         var $user = $(user);
         if ($user.text() === username) {
@@ -163,6 +159,20 @@ $(function() {
         }
       });
     });
+
+    socket.on('room closed', function(rooms) {
+      alert('The game was closed');
+      backToLobby(rooms);
+    });
+
+    function backToLobby(rooms) {
+      socket.off('message');
+      socket.off('user joined');
+      socket.off('user left');
+      socket.off('room closed');
+      $page.hide();
+      $pages.trigger('lobby', [rooms]);
+    }
   });
 
   // navigate to login

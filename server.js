@@ -49,7 +49,7 @@ io.on('connection', function(socket) {
     socket.join(room, function(err) {
       if (err) return;
       callback && callback(room);
-      socket.broadcast.emit('add room', room, [socket.username]);
+      socket.broadcast.emit('room added', room, [socket.username]);
     });
   });
 
@@ -69,7 +69,7 @@ io.on('connection', function(socket) {
       callback && callback(room, sockets.map(function(socket) {
         return socket.username;
       }));
-      socket.broadcast.to(room).emit('join room', socket.username);
+      socket.broadcast.to(room).emit('user joined', socket.username);
     });
   });
 
@@ -83,12 +83,13 @@ io.on('connection', function(socket) {
       sockets.splice(i, 1);
       if (i === 0) {
         delete rooms[room];
-        socket.broadcast.emit('remove room', room);
+        socket.broadcast.emit('room removed', room);
+        socket.broadcast.to(room).emit('room closed', roomList());
       }
     }
 
     socket.leaveAll();
-    socket.broadcast.to(room).emit('leave room', socket.username);
+    socket.broadcast.to(room).emit('user left', socket.username);
 
     socket.join('lobby', function(err) {
       if (err) return;
