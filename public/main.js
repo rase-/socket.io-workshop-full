@@ -62,6 +62,7 @@ $(function() {
 
     function addMessage(username, message) {
       createMessageNode(username, message).appendTo($messages);
+      $messages[0].scrollTop = $messages[0].scrollHeight;
     }
 
     // sidebar
@@ -136,6 +137,7 @@ $(function() {
 
     function addMessage(username, message) {
       createMessageNode(username, message).appendTo($messages);
+      $messages[0].scrollTop = $messages[0].scrollHeight;
     }
 
     // sidebar
