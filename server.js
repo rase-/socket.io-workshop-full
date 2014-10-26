@@ -45,6 +45,7 @@ io.on('connection', function(socket) {
     if (rooms[room]) return;
     rooms[room] = [socket];
 
+    socket.leaveAll();
     socket.join(room, function(err) {
       if (err) return;
       callback && callback(room);
