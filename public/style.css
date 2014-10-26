@@ -37,6 +37,7 @@ ul {
 }
 
 .page {
+  display: none;
   height: 100%;
   position: absolute;
   width: 100%;
@@ -73,29 +74,72 @@ ul {
 
 /* Lobby page */
 
-.lobby.page {
-  display: none;
+.lobby.page .new-room {
+  background-color: #5bc0de;
+  color: #fff;
 }
 
-/* room page */
-
-.room.page {
-  display: none;
+.lobby.page .new-room:hover {
+  background-color: #31b0d5;
 }
 
-/* Font */
-
-.messages {
+.lobby.page .rooms {
   font-size: 150%;
+  height: 100%;
+  margin: 0;
+  margin-top: -43px; /* button height */
+  padding: 53px 20px 10px 20px;
 }
 
-input.message {
-  font-size: 100%;
+/* Room page */
+
+.room.page .leave-room {
+  background-color: #d9534f;
+  color: #fff;
+}
+
+.room.page .leave-room:hover {
+  background-color: #c9302c;
+  color: #fff;
+}
+
+.room.page .users {
+  font-size: 150%;
+  height: 100%;
+  margin: 0;
+  margin-top: -43px; /* button height */
+  padding: 53px 20px 10px 20px;
+}
+
+/* Chat, Sidebar */
+
+.page .chat {
+  float: left;
+  height: 100%;
+  width: 75%;
+  margin-top: -40px;
+  padding-top: 40px;
+}
+
+.page .sidebar {
+  float: left;
+  height: 100%;
+  width: 25%;
+}
+
+.page .sidebar button {
+  border: none;
+  color: #fff;
+  font-size: 17.5px;
+  height: 43px;
+  padding: 11px 19px;
+  width: 100%;
 }
 
 /* Messages */
 
 .messages {
+  font-size: 150%;
   height: 100%;
   margin: 0;
   overflow-y: scroll;
@@ -110,15 +154,12 @@ input.message {
   text-align: right;
 }
 
-/* Input */
-
 input.message {
-  bottom: 0;
+  font-size: 100%;
   height: 40px;
-  left: 0;
   outline: none;
   padding-left: 10px;
-  position: absolute;
-  right: 0;
   width: 100%;
 }
+
+

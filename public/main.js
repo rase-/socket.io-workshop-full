@@ -2,7 +2,6 @@ $(function() {
   var socket = io();
   var $window = $(window);
   var $pages = $('.pages');
-  var $currentInput;
 
   $pages.on('login', function() {
     var $page = $pages.find('.page.login');
@@ -10,51 +9,160 @@ $(function() {
     var $input = $page.find('input.username');
 
     $page.show();
-    $currentInput = $input;
+    $input.focus();
 
     $page.click(function(e){
       $input.focus();
     });
 
+    $form.off('submit');
     $form.submit(function(e) {
       e.preventDefault();
       var username = $input.val().trim();
       if (!/[a-zA-Z1-9]+/.test(username)) return;
 
-      socket.emit('login', username, function() {
+      socket.emit('login', username, function(rooms) {
         socket.username = username;
         $page.hide();
-        $page.off('click');
-        $currentInput = null;
-        $pages.trigger('lobby');
+        $pages.trigger('lobby', [rooms]);
       });
     });
   });
 
-  $pages.on('lobby', function() {
+  $pages.on('lobby', function(e, rooms) {
     var $page = $pages.find('.page.lobby');
     var $form = $page.find('form');
     var $input = $page.find('input.message');
     var $messages = $page.find('.messages');
+    var $newRoom = $page.find('.new-room');
+    var $rooms = $page.find('.rooms');
+
+    $messages.empty();
+    $rooms.empty();
+    rooms.forEach(function(room) {
+      $rooms.prepend(createRoomNode(room.room, room.usernames));
+    });
 
     $page.show();
-    $currentInput = $input;
+    $input.focus();
 
+    // chat
+    $form.off('submit');
     $form.submit(function(e) {
       e.preventDefault();
       var message = $input.val().trim();
       if (!message) return;
 
-      socket.emit('lobby message', message);
+      socket.emit('message', message);
       $input.val('');
       addMessage(socket.username, message);
     });
 
-    socket.on('lobby message', addMessage);
+    socket.on('message', addMessage);
 
     function addMessage(username, message) {
       createMessageNode(username, message).appendTo($messages);
     }
+
+    // sidebar
+    $newRoom.off('click');
+    $newRoom.click(function() {
+      socket.emit('add room', function(room) {
+        navigateToRoom(room, [socket.username]);
+      });
+    });
+
+    $rooms.off('click');
+    $rooms.on('click', '.room', function() {
+      var room = $(this).attr('data-room');
+      socket.emit('join room', room, function(room, usernames) {
+        navigateToRoom(room, usernames);
+      });
+    });
+
+    socket.on('add room', function(room, usernames) {
+      $rooms.prepend(createRoomNode(room, usernames));
+    });
+
+    socket.on('remove room', function(room) {
+      $rooms.find('.room').each(function(i, r) {
+        var $room = $(r);
+        if ($room.attr('data-room') === room) {
+          $room.remove();
+          return false;
+        }
+      });
+    });
+
+    function navigateToRoom(room, usernames) {
+      socket.off('message');
+      socket.off('add room');
+      socket.off('remove room');
+      $page.hide();
+      $pages.trigger('room', [room, usernames]);
+    }
+  });
+
+  $pages.on('room', function(e, room, usernames) {
+    var $page = $pages.find('.page.room');
+    var $form = $page.find('form');
+    var $input = $page.find('input.message');
+    var $messages = $page.find('.messages');
+    var $leaveRoom = $page.find('.leave-room');
+    var $users = $page.find('.users');
+
+    $messages.empty();
+    $page.show();
+    $input.focus();
+
+    $users.empty();
+    usernames.forEach(function(username) {
+      $users.append(createUserNode(username));
+    });
+
+    // chat
+    $form.off('submit');
+    $form.submit(function(e) {
+      e.preventDefault();
+      var message = $input.val().trim();
+      if (!message) return;
+
+      socket.emit('message', room, message);
+      $input.val('');
+      addMessage(socket.username, message);
+    });
+
+    socket.on('message', addMessage);
+
+    function addMessage(username, message) {
+      createMessageNode(username, message).appendTo($messages);
+    }
+
+    // sidebar
+    $leaveRoom.off('click');
+    $leaveRoom.click(function() {
+      socket.emit('leave room', room, function(rooms) {
+        socket.off('message');
+        socket.off('join room');
+        socket.off('leave room');
+        $page.hide();
+        $pages.trigger('lobby', [rooms]);
+      });
+    });
+
+    socket.on('join room', function(username) {
+      $users.append(createUserNode(username));
+    });
+
+    socket.on('leave room', function(username) {
+      $users.find('.user').each(function(i, user) {
+        var $user = $(user);
+        if ($user.text() === username) {
+          $user.remove();
+          return false;
+        }
+      });
+    });
   });
 
   // navigate to login
@@ -64,5 +172,18 @@ $(function() {
     return $('<li class="message"/>')
       .append($('<span class="username"/>').text(username))
       .append($('<span class="message"/>').text(message));
+  }
+
+  function createUserNode(username) {
+    return $('<li class="user"/>')
+      .append($('<span class="username"/>').text(username));
+  }
+
+  function createRoomNode(room, usernames) {
+    var creator = usernames[0];
+    var roomName = creator + '\'s game';
+    return $('<li class="room"/>')
+      .attr('data-room', room)
+      .append($('<span class="room"/>').text(roomName));
   }
 });

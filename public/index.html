@@ -13,12 +13,28 @@
       </form>
     </li>
     <li class="lobby page">
-      <ul class="messages"></ul>
-      <form>
-        <input class="message" autocomplete="off"/>
-      </form>
+      <div class="chat">
+        <ul class="messages"></ul>
+        <form>
+          <input class="message" autocomplete="off"/>
+        </form>
+      </div>
+      <div class="sidebar">
+        <button class="new-room" type="button">Create your own game</button>
+        <ul class="rooms"></ul>
+      </div>
     </li>
     <li class="room page">
+      <div class="chat">
+        <ul class="messages"></ul>
+        <form>
+          <input class="message" autocomplete="off"/>
+        </form>
+      </div>
+      <div class="sidebar">
+        <button class="leave-room" type="button">Back to the lobby</button>
+        <ul class="users"></ul>
+      </div>
     </li>
   </ul>
   <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
