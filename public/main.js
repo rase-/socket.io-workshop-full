@@ -194,6 +194,6 @@ $(function() {
     var roomName = creator + '\'s game';
     return $('<li class="room"/>')
       .attr('data-room', room)
-      .append($('<span class="room"/>').text(roomName));
+      .append($('<span class="roomname"/>').text(roomName));
   }
 });

@@ -88,7 +88,16 @@ ul {
   height: 100%;
   margin: 0;
   margin-top: -43px; /* button height */
-  padding: 53px 20px 10px 20px;
+  padding: 43px 0px 0px 0px;
+}
+
+.lobby.page .rooms .room {
+  border-bottom: 2px solid #eee;
+  padding: 10px 20px
+}
+
+.lobby.page .rooms .room:hover {
+  background-color: #eee;
 }
 
 /* Room page */
