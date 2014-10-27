@@ -13,6 +13,9 @@ io.on('connection', function(socket) {
   socket.on('login', function(username, callback) {
     if (socket.username) return;
 
+    username = username.trim();
+    if (!/^[a-zA-Z1-9_\-]{1,16}$/.test(username)) return;
+
     socket.username = username;
 
     socket.join('lobby', function(err) {

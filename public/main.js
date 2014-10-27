@@ -21,8 +21,6 @@ $(function() {
     $form.submit(function(e) {
       e.preventDefault();
       var username = $input.val().trim();
-      if (!/[a-zA-Z1-9]+/.test(username)) return;
-
       socket.emit('login', username, function(rooms) {
         socket.username = username;
         $page.hide();
