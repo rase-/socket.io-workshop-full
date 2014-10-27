@@ -182,6 +182,12 @@ ul {
   text-align: right;
 }
 
+.messages .log {
+  color: gray;
+  font-size: 80%;
+  text-align: center;
+}
+
 input.message {
   font-size: 100%;
   height: 40px;

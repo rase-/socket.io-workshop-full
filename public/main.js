@@ -2,6 +2,7 @@ $(function() {
   var socket = io();
   var $pages = $('.pages');
   var messageHtml = $('#template-message').html();
+  var logHtml = $('#template-log').html();
   var roomHtml = $('#template-room').html();
   var userHtml = $('#template-user').html();
 
@@ -38,9 +39,11 @@ $(function() {
     var $rooms = $page.find('.rooms');
 
     $messages.empty();
+    $messages.append(logNode('Welcome to the game'));
+
     $rooms.empty();
     rooms.forEach(function(room) {
-      $rooms.prepend(createRoomNode(room.room, room.usernames));
+      $rooms.prepend(roomNode(room.room, room.usernames));
     });
 
     $page.show();
@@ -61,7 +64,7 @@ $(function() {
     socket.on('message', addMessage);
 
     function addMessage(username, message) {
-      createMessageNode(username, message).appendTo($messages);
+      messageNode(username, message).appendTo($messages);
       $messages[0].scrollTop = $messages[0].scrollHeight;
     }
 
@@ -82,7 +85,7 @@ $(function() {
     });
 
     socket.on('room added', function(room, username) {
-      $rooms.prepend(createRoomNode(room, [username]));
+      $rooms.prepend(roomNode(room, [username]));
     });
 
     socket.on('room removed', function(room) {
@@ -111,13 +114,15 @@ $(function() {
     var $users = $page.find('.users');
 
     $messages.empty();
-    $page.show();
-    $input.focus();
+    $messages.append(logNode('You have joined ' + usernames[0] + '\'s game'));
 
     $users.empty();
     usernames.forEach(function(username) {
-      $users.append(createUserNode(username));
+      $users.append(userNode(username));
     });
+
+    $page.show();
+    $input.focus();
 
     // chat
     $form.off('submit');
@@ -134,7 +139,7 @@ $(function() {
     socket.on('message', addMessage);
 
     function addMessage(username, message) {
-      createMessageNode(username, message).appendTo($messages);
+      messageNode(username, message).appendTo($messages);
       $messages[0].scrollTop = $messages[0].scrollHeight;
     }
 
@@ -147,10 +152,12 @@ $(function() {
     });
 
     socket.on('user joined', function(username) {
-      $users.append(createUserNode(username));
+      $messages.append(logNode(username + ' joined'));
+      $users.append(userNode(username));
     });
 
     socket.on('user left', function(username) {
+      $messages.append(logNode(username + ' left'));
       $users.find('.user[data-username=' + username + ']:first').remove();
     });
 
@@ -172,14 +179,18 @@ $(function() {
   // navigate to login
   $pages.trigger('login');
 
-  function createMessageNode(username, message) {
+  function messageNode(username, message) {
     var $message = $(messageHtml);
     $message.find('.username').text(username);
     $message.find('.body').text(message);
     return $message;
   }
 
-  function createRoomNode(room, usernames) {
+  function logNode(text) {
+    return $(logHtml).text(text);
+  }
+
+  function roomNode(room, usernames) {
     var roomName = usernames[0] + '\'s game';
     var $room = $(roomHtml).attr('data-room', room);
     $room.find('.roomname').text(roomName);
@@ -187,7 +198,7 @@ $(function() {
     return $room;
   }
 
-  function createUserNode(username) {
+  function userNode(username) {
     var $user = $(userHtml).attr('data-username', username);
     $user.find('.username').text(username);
     return $user;
