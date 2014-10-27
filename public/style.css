@@ -93,6 +93,7 @@ ul {
 
 .lobby.page .rooms .room {
   border-bottom: 2px solid #eee;
+  cursor: pointer;
   padding: 10px 20px
 }
 
@@ -156,6 +157,7 @@ ul {
 .page .sidebar button {
   border: none;
   color: #fff;
+  cursor: pointer;
   font-size: 17.5px;
   height: 43px;
   padding: 11px 19px;
