@@ -153,13 +153,7 @@ $(function() {
     });
 
     socket.on('user left', function(username) {
-      $users.find('.user').each(function(i, user) {
-        var $user = $(user);
-        if ($user.text() === username) {
-          $user.remove();
-          return false;
-        }
-      });
+      $users.find('.user[data-username=' + username + ']:first').remove();
     });
 
     socket.on('room closed', function(rooms) {
@@ -196,7 +190,7 @@ $(function() {
   }
 
   function createUserNode(username) {
-    var $user = $(userHtml);
+    var $user = $(userHtml).attr('data-username', username);
     $user.find('.username').text(username);
     return $user;
   }
