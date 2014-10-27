@@ -1,7 +1,9 @@
 $(function() {
   var socket = io();
-  var $window = $(window);
   var $pages = $('.pages');
+  var messageHtml = $('#template-message').html();
+  var roomHtml = $('#template-room').html();
+  var userHtml = $('#template-user').html();
 
   $pages.on('login', function() {
     var $page = $pages.find('.page.login');
@@ -179,21 +181,23 @@ $(function() {
   $pages.trigger('login');
 
   function createMessageNode(username, message) {
-    return $('<li class="message"/>')
-      .append($('<span class="username"/>').text(username))
-      .append($('<span class="message"/>').text(message));
-  }
-
-  function createUserNode(username) {
-    return $('<li class="user"/>')
-      .append($('<span class="username"/>').text(username));
+    var $message = $(messageHtml);
+    $message.find('.username').text(username);
+    $message.find('.body').text(message);
+    return $message;
   }
 
   function createRoomNode(room, usernames) {
     var roomName = usernames[0] + '\'s game';
-    return $('<li class="room"/>')
-      .attr('data-room', room)
-      .append($('<span class="roomname"/>').text(roomName))
-      .append($('<span class="badge user-num"/>').text(usernames.length));
+    var $room = $(roomHtml).attr('data-room', room);
+    $room.find('.roomname').text(roomName);
+    $room.find('.user-num').text(usernames.length);
+    return $room;
+  }
+
+  function createUserNode(username) {
+    var $user = $(userHtml);
+    $user.find('.username').text(username);
+    return $user;
   }
 });

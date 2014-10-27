@@ -37,6 +37,25 @@
       </div>
     </li>
   </ul>
+
+  <script type="text/html" id="template-message">
+    <li class="message">
+      <span class="username"></span>
+      <span class="body"></span>
+    </li>
+  </script>
+  <script type="text/html" id="template-room">
+    <li class="room" data-room="">
+      <span class="roomname"></span>
+      <span class="badge user-num"></span>
+    </li>
+  </script>
+  <script type="text/html" id="template-user">
+    <li class="user">
+      <span class="username"></span>
+    </li>
+  </script>
+
   <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
   <script src="/socket.io/socket.io.js"></script>
   <script src="/main.js"></script>
