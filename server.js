@@ -49,7 +49,7 @@ io.on('connection', function(socket) {
     socket.join(room, function(err) {
       if (err) return;
       callback && callback(room);
-      socket.broadcast.emit('room added', room, [socket.username]);
+      socket.broadcast.emit('room added', room, socket.username);
     });
   });
 
@@ -66,9 +66,8 @@ io.on('connection', function(socket) {
         sockets.push(socket);
       }
 
-      callback && callback(room, sockets.map(function(socket) {
-        return socket.username;
-      }));
+      callback && callback(room, usernames(room));
+      socket.broadcast.to('lobby').emit('room updated', room, userNum(room));
       socket.broadcast.to(room).emit('user joined', socket.username);
     });
   });
@@ -89,6 +88,7 @@ io.on('connection', function(socket) {
     }
 
     socket.leaveAll();
+    socket.broadcast.to('lobby').emit('room updated', room, userNum(room));
     socket.broadcast.to(room).emit('user left', socket.username);
 
     socket.join('lobby', function(err) {
@@ -102,11 +102,20 @@ function roomList() {
   return Object.keys(rooms).map(function(room) {
     return {
       room: room,
-      usernames: rooms[room].map(function(socket) {
-        return socket.username;
-      })
+      usernames: usernames(room)
     };
   });
+}
+
+function usernames(room) {
+  return rooms[room].map(function(socket) {
+    return socket.username;
+  });
+}
+
+function userNum(room) {
+  var sockets = rooms[room];
+  return sockets ? sockets.length : 0;
 }
 
 http.listen(port, function() {

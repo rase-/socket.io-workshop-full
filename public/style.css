@@ -100,6 +100,23 @@ ul {
   background-color: #eee;
 }
 
+.lobby.page .rooms .room .badge {
+  display: inline-block;
+  float: right;
+  min-width: 10px;
+  padding: 3px 7px;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  color: #fff;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+  background-color: #777;
+  border-radius: 10px;
+  margin-top: 5px; /* FIXME */
+}
+
 /* Room page */
 
 .room.page .leave-room {

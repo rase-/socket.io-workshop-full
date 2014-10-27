@@ -81,18 +81,16 @@ $(function() {
       });
     });
 
-    socket.on('room added', function(room, usernames) {
-      $rooms.prepend(createRoomNode(room, usernames));
+    socket.on('room added', function(room, username) {
+      $rooms.prepend(createRoomNode(room, [username]));
     });
 
     socket.on('room removed', function(room) {
-      $rooms.find('.room').each(function(i, r) {
-        var $room = $(r);
-        if ($room.attr('data-room') === room) {
-          $room.remove();
-          return false;
-        }
-      });
+      $rooms.find('.room[data-room=' + room + ']').remove();
+    });
+
+    socket.on('room updated', function(room, userNum) {
+      $rooms.find('.room[data-room=' + room + ']').find('.user-num').text(userNum);
     });
 
     function navigateToRoom(room, usernames) {
@@ -192,10 +190,10 @@ $(function() {
   }
 
   function createRoomNode(room, usernames) {
-    var creator = usernames[0];
-    var roomName = creator + '\'s game';
+    var roomName = usernames[0] + '\'s game';
     return $('<li class="room"/>')
       .attr('data-room', room)
-      .append($('<span class="roomname"/>').text(roomName));
+      .append($('<span class="roomname"/>').text(roomName))
+      .append($('<span class="badge user-num"/>').text(usernames.length));
   }
 });
