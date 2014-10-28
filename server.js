@@ -34,6 +34,7 @@ io.on('connection', function(socket) {
 
     if (!socket.username) return;
     if (!message) return;
+    if (!~socket.rooms.indexOf(room)) return;
 
     socket.broadcast.to(room).emit('message', socket.username, message);
   });
