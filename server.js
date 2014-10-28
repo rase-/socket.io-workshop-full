@@ -8,6 +8,7 @@ var port = process.env.PORT || 3000;
 app.use(express.static(__dirname + '/public'));
 
 var roomMap = {};
+var numUsers = 0;
 
 io.on('connection', function(socket) {
   socket.on('login', function(username, callback) {
@@ -20,6 +21,9 @@ io.on('connection', function(socket) {
       id: crypto.createHash('sha1').update(socket.id).digest('hex'),
       username: username
     };
+
+    numUsers++;
+    io.emit('num users', numUsers);
 
     socket.join('lobby', function(err) {
       if (err) return;
@@ -76,7 +80,7 @@ io.on('connection', function(socket) {
 
       socket.roomId = roomId;
       callback && callback(room);
-      socket.broadcast.to('lobby').emit('room updated', room);
+      socket.broadcast.to('lobby').emit('room changed', room);
       socket.broadcast.to(roomId).emit('user joined', socket.user);
     });
   });
@@ -93,7 +97,15 @@ io.on('connection', function(socket) {
     });
   });
 
-  socket.on('disconnect', leave);
+  socket.on('disconnect', function() {
+    leave();
+
+    if (socket.user) {
+      delete socket.user;
+      numUsers--;
+      io.emit('num users', numUsers);
+    }
+  });
 
   function leave() {
     var roomId = socket.roomId;
@@ -113,7 +125,7 @@ io.on('connection', function(socket) {
       socket.broadcast.to('lobby').emit('room removed', roomId);
       socket.broadcast.to(roomId).emit('room closed', rooms());
     } else {
-      socket.broadcast.to('lobby').emit('room updated', room);
+      socket.broadcast.to('lobby').emit('room changed', room);
       socket.broadcast.to(roomId).emit('user left', socket.user);
     }
   }

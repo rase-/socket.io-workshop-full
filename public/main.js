@@ -1,10 +1,21 @@
 $(function() {
   var socket = io();
+  var $document = $(document);
+  var $header = $('.header');
   var $pages = $('.pages');
   var messageHtml = $('#template-message').html();
   var logHtml = $('#template-log').html();
   var roomHtml = $('#template-room').html();
   var userHtml = $('#template-user').html();
+
+  socket.on('num users', function(num) {
+    $header.find('.num-users').text(num);
+  });
+
+  $document.on('headerTitle', function(e, title) {
+    $header.toggle(!!title);
+    $header.find('.title').text(title);
+  });
 
   $pages.on('login', function() {
     var $page = $pages.find('.page.login');
@@ -25,7 +36,7 @@ $(function() {
       socket.emit('login', username, function(user, rooms) {
         socket.user = user;
         $page.hide();
-        $pages.trigger('lobby', [rooms]);
+        $page.trigger('lobby', [rooms]);
       });
     });
   });
@@ -37,6 +48,8 @@ $(function() {
     var $messages = $page.find('.messages');
     var $newRoom = $page.find('.new-room');
     var $rooms = $page.find('.rooms');
+
+    $page.trigger('headerTitle', 'Lobby');
 
     $messages.empty();
     $messages.append(logNode('Welcome to the game'));
@@ -92,8 +105,8 @@ $(function() {
       $rooms.find('.room[data-id=' + roomId + ']').remove();
     });
 
-    socket.on('room updated', function(room) {
-      $rooms.find('.room[data-id=' + room.id + ']').find('.user-num').text(room.users.length);
+    socket.on('room changed', function(room) {
+      $rooms.find('.room[data-id=' + room.id + ']').find('.num-users').text(room.users.length);
     });
 
     function navigateToRoom(room) {
@@ -101,7 +114,7 @@ $(function() {
       socket.off('room added');
       socket.off('room removed');
       $page.hide();
-      $pages.trigger('room', [room]);
+      $page.trigger('room', [room]);
     }
   });
 
@@ -112,6 +125,8 @@ $(function() {
     var $messages = $page.find('.messages');
     var $leaveRoom = $page.find('.leave-room');
     var $users = $page.find('.users');
+
+    $page.trigger('headerTitle', room.name);
 
     $messages.empty();
     $messages.append(logNode('You have joined ' + room.name));
@@ -172,7 +187,7 @@ $(function() {
       socket.off('user left');
       socket.off('room closed');
       $page.hide();
-      $pages.trigger('lobby', [rooms]);
+      $page.trigger('lobby', [rooms]);
     }
   });
 
@@ -193,7 +208,7 @@ $(function() {
   function roomNode(room) {
     var $room = $(roomHtml).attr('data-id', room.id);
     $room.find('.roomname').text(room.name);
-    $room.find('.user-num').text(room.users.length);
+    $room.find('.num-users').text(room.users.length);
     return $room;
   }
 

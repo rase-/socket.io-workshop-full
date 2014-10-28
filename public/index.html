@@ -5,6 +5,13 @@
   <link rel="stylesheet" href="/style.css"/>
 </head>
 <body>
+  <div class="header">
+    <h2 class="title"></h2>
+    <span class="state">
+      Online Players:
+      <span class="num-users"></span>
+    </span>
+  </div>
   <ul class="pages">
     <li class="login page">
       <form>
@@ -50,7 +57,7 @@
   <script type="text/html" id="template-room">
     <li class="room" data-id="">
       <span class="roomname"></span>
-      <span class="badge user-num"></span>
+      <span class="badge num-users"></span>
     </li>
   </script>
   <script type="text/html" id="template-user">
