@@ -22,8 +22,8 @@ $(function() {
     $form.submit(function(e) {
       e.preventDefault();
       var username = $input.val().trim();
-      socket.emit('login', username, function(rooms) {
-        socket.username = username;
+      socket.emit('login', username, function(user, rooms) {
+        socket.user = user;
         $page.hide();
         $pages.trigger('lobby', [rooms]);
       });
@@ -43,7 +43,7 @@ $(function() {
 
     $rooms.empty();
     rooms.forEach(function(room) {
-      $rooms.prepend(roomNode(room.room, room.usernames));
+      $rooms.prepend(roomNode(room));
     });
 
     $page.show();
@@ -58,13 +58,13 @@ $(function() {
 
       socket.emit('message', message);
       $input.val('');
-      addMessage(socket.username, message);
+      addMessage(socket.user, message);
     });
 
     socket.on('message', addMessage);
 
-    function addMessage(username, message) {
-      messageNode(username, message).appendTo($messages);
+    function addMessage(user, message) {
+      messageNode(user, message).appendTo($messages);
       $messages[0].scrollTop = $messages[0].scrollHeight;
     }
 
@@ -72,40 +72,40 @@ $(function() {
     $newRoom.off('click');
     $newRoom.click(function() {
       socket.emit('add room', function(room) {
-        navigateToRoom(room, [socket.username]);
+        navigateToRoom(room);
       });
     });
 
     $rooms.off('click');
     $rooms.on('click', '.room', function() {
-      var room = $(this).attr('data-room');
-      socket.emit('join room', room, function(room, usernames) {
-        navigateToRoom(room, usernames);
+      var roomId = $(this).attr('data-id');
+      socket.emit('join room', roomId, function(room) {
+        navigateToRoom(room);
       });
     });
 
-    socket.on('room added', function(room, username) {
-      $rooms.prepend(roomNode(room, [username]));
+    socket.on('room added', function(room) {
+      $rooms.prepend(roomNode(room));
     });
 
-    socket.on('room removed', function(room) {
-      $rooms.find('.room[data-room=' + room + ']').remove();
+    socket.on('room removed', function(roomId) {
+      $rooms.find('.room[data-id=' + roomId + ']').remove();
     });
 
-    socket.on('room updated', function(room, userNum) {
-      $rooms.find('.room[data-room=' + room + ']').find('.user-num').text(userNum);
+    socket.on('room updated', function(room) {
+      $rooms.find('.room[data-id=' + room.id + ']').find('.user-num').text(room.users.length);
     });
 
-    function navigateToRoom(room, usernames) {
+    function navigateToRoom(room) {
       socket.off('message');
       socket.off('room added');
       socket.off('room removed');
       $page.hide();
-      $pages.trigger('room', [room, usernames]);
+      $pages.trigger('room', [room]);
     }
   });
 
-  $pages.on('room', function(e, room, usernames) {
+  $pages.on('room', function(e, room) {
     var $page = $pages.find('.page.room');
     var $form = $page.find('form');
     var $input = $page.find('input.message');
@@ -114,11 +114,11 @@ $(function() {
     var $users = $page.find('.users');
 
     $messages.empty();
-    $messages.append(logNode('You have joined ' + usernames[0] + '\'s game'));
+    $messages.append(logNode('You have joined ' + room.name));
 
     $users.empty();
-    usernames.forEach(function(username) {
-      $users.append(userNode(username));
+    room.users.forEach(function(user) {
+      $users.append(userNode(user));
     });
 
     $page.show();
@@ -133,13 +133,13 @@ $(function() {
 
       socket.emit('message', message);
       $input.val('');
-      addMessage(socket.username, message);
+      addMessage(socket.user, message);
     });
 
     socket.on('message', addMessage);
 
-    function addMessage(username, message) {
-      messageNode(username, message).appendTo($messages);
+    function addMessage(user, message) {
+      messageNode(user, message).appendTo($messages);
       $messages[0].scrollTop = $messages[0].scrollHeight;
     }
 
@@ -151,14 +151,14 @@ $(function() {
       });
     });
 
-    socket.on('user joined', function(username) {
-      $messages.append(logNode(username + ' joined'));
-      $users.append(userNode(username));
+    socket.on('user joined', function(user) {
+      $messages.append(logNode(user.username + ' joined'));
+      $users.append(userNode(user));
     });
 
-    socket.on('user left', function(username) {
-      $messages.append(logNode(username + ' left'));
-      $users.find('.user[data-username=' + username + ']:first').remove();
+    socket.on('user left', function(user) {
+      $messages.append(logNode(user.username + ' left'));
+      $users.find('.user[data-id=' + user.id + ']').remove();
     });
 
     socket.on('room closed', function(rooms) {
@@ -179,9 +179,9 @@ $(function() {
   // navigate to login
   $pages.trigger('login');
 
-  function messageNode(username, message) {
+  function messageNode(user, message) {
     var $message = $(messageHtml);
-    $message.find('.username').text(username);
+    $message.find('.username').text(user.username);
     $message.find('.body').text(message);
     return $message;
   }
@@ -190,17 +190,16 @@ $(function() {
     return $(logHtml).text(text);
   }
 
-  function roomNode(room, usernames) {
-    var roomName = usernames[0] + '\'s game';
-    var $room = $(roomHtml).attr('data-room', room);
-    $room.find('.roomname').text(roomName);
-    $room.find('.user-num').text(usernames.length);
+  function roomNode(room) {
+    var $room = $(roomHtml).attr('data-id', room.id);
+    $room.find('.roomname').text(room.name);
+    $room.find('.user-num').text(room.users.length);
     return $room;
   }
 
-  function userNode(username) {
-    var $user = $(userHtml).attr('data-username', username);
-    $user.find('.username').text(username);
+  function userNode(user) {
+    var $user = $(userHtml).attr('data-id', user.id);
+    $user.find('.username').text(user.username);
     return $user;
   }
 });

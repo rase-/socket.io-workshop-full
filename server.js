@@ -7,131 +7,122 @@ var port = process.env.PORT || 3000;
 
 app.use(express.static(__dirname + '/public'));
 
-var rooms = {};
+var roomMap = {};
 
 io.on('connection', function(socket) {
   socket.on('login', function(username, callback) {
-    if (socket.username) return;
+    if (socket.user) return;
 
     username = username.trim();
     if (!/^[a-zA-Z1-9_\-]{1,16}$/.test(username)) return;
 
-    socket.username = username;
+    socket.user = {
+      id: crypto.createHash('sha1').update(socket.id).digest('hex'),
+      username: username
+    };
 
     socket.join('lobby', function(err) {
       if (err) return;
 
-      socket.room = 'lobby';
-      callback && callback(roomList());
-      socket.broadcast.emit('add user', username);
+      socket.roomId = 'lobby';
+      callback && callback(socket.user, rooms());
     });
   });
 
   socket.on('message', function(message) {
-    if (!socket.username) return;
-    if (!socket.room) return;
+    if (!socket.user) return;
+    if (!socket.roomId) return;
     if (!message) return;
 
-    socket.broadcast.to(socket.room).emit('message', socket.username, message);
+    socket.broadcast.to(socket.roomId).emit('message', socket.user, message);
   });
 
   socket.on('add room', function(callback) {
-    if (!socket.username) return;
+    if (!socket.user) return;
 
-    var hash = crypto.createHash('sha1');
-    hash.update(socket.id);
+    var roomId = socket.user.id;
+    if (roomMap[roomId]) return;
 
-    var room = hash.digest('hex');
-    if (rooms[room]) return;
-    rooms[room] = [socket];
+    var room = roomMap[roomId] = {
+      id: roomId,
+      name: socket.user.username + '\'s game',
+      users: [socket.user]
+    };
 
     socket.leaveAll();
-    socket.room = null;
-    socket.join(room, function(err) {
+    socket.roomId = null;
+    socket.join(roomId, function(err) {
       if (err) return;
-      socket.room = room;
+
+      socket.roomId = roomId;
       callback && callback(room);
-      socket.broadcast.emit('room added', room, socket.username);
+      socket.broadcast.to('lobby').emit('room added', room);
     });
   });
 
-  socket.on('join room', function(room, callback) {
-    if (!rooms[room]) return;
+  socket.on('join room', function(roomId, callback) {
+    if (!roomMap[roomId]) return;
 
     socket.leaveAll();
-    socket.room = null;
-    socket.join(room, function(err) {
+    socket.roomId = null;
+    socket.join(roomId, function(err) {
       if (err) return;
 
-      var sockets = rooms[room];
-      if (!sockets) return;
-      if (!~sockets.indexOf(socket)) {
-        sockets.push(socket);
+      var room = roomMap[roomId];
+      if (!room) return;
+      if (!~room.users.indexOf(socket.user)) {
+        room.users.push(socket.user);
       }
 
-      socket.room = room;
-      callback && callback(room, usernames(room));
-      socket.broadcast.to('lobby').emit('room updated', room, userNum(room));
-      socket.broadcast.to(room).emit('user joined', socket.username);
+      socket.roomId = roomId;
+      callback && callback(room);
+      socket.broadcast.to('lobby').emit('room updated', room);
+      socket.broadcast.to(roomId).emit('user joined', socket.user);
     });
   });
 
   socket.on('leave room', function(callback) {
-    if (!socket.username) return;
-    if (!socket.room) return;
+    if (!socket.user) return;
+    if (!socket.roomId) return;
 
     leave();
     socket.join('lobby', function(err) {
       if (err) return;
-      socket.room = 'lobby';
-      callback && callback(roomList());
+      socket.roomId = 'lobby';
+      callback && callback(rooms());
     });
   });
 
   socket.on('disconnect', leave);
 
   function leave() {
-    var room = socket.room;
-    var sockets = rooms[room];
-    if (!sockets) return;
+    var roomId = socket.roomId;
+    var room = roomMap[roomId];
+    if (!room) return;
 
-    var i = sockets.indexOf(socket);
+    var i = room.users.indexOf(socket.user);
     if (!~i) return;
 
-    sockets.splice(i, 1);
+    room.users.splice(i, 1);
     socket.leaveAll();
-    socket.room = null;
+    socket.roomId = null;
 
     if (i === 0) {
       // remove the room when the user is the creator of it
-      delete rooms[room];
-      socket.broadcast.to('lobby').emit('room removed', room);
-      socket.broadcast.to(room).emit('room closed', roomList());
+      delete roomMap[roomId];
+      socket.broadcast.to('lobby').emit('room removed', roomId);
+      socket.broadcast.to(roomId).emit('room closed', rooms());
     } else {
-      socket.broadcast.to('lobby').emit('room updated', room, userNum(room));
-      socket.broadcast.to(room).emit('user left', socket.username);
+      socket.broadcast.to('lobby').emit('room updated', room);
+      socket.broadcast.to(roomId).emit('user left', socket.user);
     }
   }
 });
 
-function roomList() {
-  return Object.keys(rooms).map(function(room) {
-    return {
-      room: room,
-      usernames: usernames(room)
-    };
+function rooms() {
+  return Object.keys(roomMap).map(function(roomId) {
+    return roomMap[roomId];
   });
-}
-
-function usernames(room) {
-  return rooms[room].map(function(socket) {
-    return socket.username;
-  });
-}
-
-function userNum(room) {
-  var sockets = rooms[room];
-  return sockets ? sockets.length : 0;
 }
 
 http.listen(port, function() {
