@@ -131,7 +131,7 @@ $(function() {
       var message = $input.val().trim();
       if (!message) return;
 
-      socket.emit('message', room, message);
+      socket.emit('message', message);
       $input.val('');
       addMessage(socket.username, message);
     });
@@ -146,7 +146,7 @@ $(function() {
     // sidebar
     $leaveRoom.off('click');
     $leaveRoom.click(function() {
-      socket.emit('leave room', room, function(rooms) {
+      socket.emit('leave room', function(rooms) {
         backToLobby(rooms);
       });
     });

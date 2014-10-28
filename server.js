@@ -21,22 +21,18 @@ io.on('connection', function(socket) {
     socket.join('lobby', function(err) {
       if (err) return;
 
+      socket.room = 'lobby';
       callback && callback(roomList());
       socket.broadcast.emit('add user', username);
     });
   });
 
-  socket.on('message', function(room, message) {
-    if ('undefined' === typeof message) {
-      message = room;
-      room = 'lobby';
-    }
-
+  socket.on('message', function(message) {
     if (!socket.username) return;
+    if (!socket.room) return;
     if (!message) return;
-    if (!~socket.rooms.indexOf(room)) return;
 
-    socket.broadcast.to(room).emit('message', socket.username, message);
+    socket.broadcast.to(socket.room).emit('message', socket.username, message);
   });
 
   socket.on('add room', function(callback) {
@@ -50,8 +46,10 @@ io.on('connection', function(socket) {
     rooms[room] = [socket];
 
     socket.leaveAll();
+    socket.room = null;
     socket.join(room, function(err) {
       if (err) return;
+      socket.room = room;
       callback && callback(room);
       socket.broadcast.emit('room added', room, socket.username);
     });
@@ -61,6 +59,7 @@ io.on('connection', function(socket) {
     if (!rooms[room]) return;
 
     socket.leaveAll();
+    socket.room = null;
     socket.join(room, function(err) {
       if (err) return;
 
@@ -70,36 +69,49 @@ io.on('connection', function(socket) {
         sockets.push(socket);
       }
 
+      socket.room = room;
       callback && callback(room, usernames(room));
       socket.broadcast.to('lobby').emit('room updated', room, userNum(room));
       socket.broadcast.to(room).emit('user joined', socket.username);
     });
   });
 
-  socket.on('leave room', function(room, callback) {
-    if (!rooms[room]) return;
+  socket.on('leave room', function(callback) {
+    if (!socket.username) return;
+    if (!socket.room) return;
 
-    var sockets = rooms[room];
-    if (!sockets) return;
-    var i = sockets.indexOf(socket);
-    if (~i) {
-      sockets.splice(i, 1);
-      if (i === 0) {
-        delete rooms[room];
-        socket.broadcast.emit('room removed', room);
-        socket.broadcast.to(room).emit('room closed', roomList());
-      }
-    }
-
-    socket.leaveAll();
-    socket.broadcast.to('lobby').emit('room updated', room, userNum(room));
-    socket.broadcast.to(room).emit('user left', socket.username);
-
+    leave();
     socket.join('lobby', function(err) {
       if (err) return;
+      socket.room = 'lobby';
       callback && callback(roomList());
     });
   });
+
+  socket.on('disconnect', leave);
+
+  function leave() {
+    var room = socket.room;
+    var sockets = rooms[room];
+    if (!sockets) return;
+
+    var i = sockets.indexOf(socket);
+    if (!~i) return;
+
+    sockets.splice(i, 1);
+    socket.leaveAll();
+    socket.room = null;
+
+    if (i === 0) {
+      // remove the room when the user is the creator of it
+      delete rooms[room];
+      socket.broadcast.to('lobby').emit('room removed', room);
+      socket.broadcast.to(room).emit('room closed', roomList());
+    } else {
+      socket.broadcast.to('lobby').emit('room updated', room, userNum(room));
+      socket.broadcast.to(room).emit('user left', socket.username);
+    }
+  }
 });
 
 function roomList() {
