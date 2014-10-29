@@ -27,7 +27,7 @@ function Room(selector) {
 
   socket.on('user joined', function(user) {
     self.chat.log(user.username + ' joined');
-    self.$users.append(userNode(user));
+    self.$users.append(self.createUserNode(user));
   });
 
   socket.on('user left', function(user) {
