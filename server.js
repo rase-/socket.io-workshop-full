@@ -38,7 +38,8 @@ io.on('connection', function(socket) {
     if (!socket.roomId) return;
     if (!message) return;
 
-    socket.broadcast.to(socket.roomId).emit('message', socket.user, message);
+    var eventName = 'lobby' === socket.roomId ? 'lobby message' : 'message';
+    socket.broadcast.to(socket.roomId).emit(eventName, socket.user, message);
   });
 
   socket.on('add room', function(callback) {
