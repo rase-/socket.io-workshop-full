@@ -16,14 +16,14 @@ function Lobby(selector) {
     messageEvent: 'lobby message'
   });
 
+  $(document).on('lobby', function(e, rooms) {
+    self.refresh(rooms);
+  });
+
   this.$newRoom.click(function() {
     socket.emit('add room', function(room) {
       self.navigateToRoom(room);
     });
-  });
-
-  $(document).on('lobby', function(e, rooms) {
-    self.refresh(rooms);
   });
 
   this.$rooms.on('click', '.room', function() {
@@ -34,7 +34,7 @@ function Lobby(selector) {
   });
 
   socket.on('room added', function(room) {
-    self.$rooms.prepend(self.createRoom(room));
+    self.$rooms.prepend(self.createRoomNode(room));
   });
 
   socket.on('room removed', function(roomId) {
@@ -49,7 +49,7 @@ function Lobby(selector) {
 Lobby.prototype.refresh = function(rooms) {
   this.$rooms.empty();
   rooms.forEach(function(room) {
-    this.$rooms.prepend(this.createRoom(room));
+    this.$rooms.prepend(this.createRoomNode(room));
   }, this);
 
   this.$node.show();
@@ -64,7 +64,7 @@ Lobby.prototype.navigateToRoom = function(room) {
   this.$node.trigger('room', [room]);
 };
 
-Lobby.prototype.createRoom = function(room) {
+Lobby.prototype.createRoomNode = function(room) {
   var $room = $(roomHtml).attr('data-id', room.id);
   $room.find('.roomname').text(room.name);
   $room.find('.num-users').text(room.users.length);

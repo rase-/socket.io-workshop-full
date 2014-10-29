@@ -44,7 +44,7 @@ function Room(selector) {
 Room.prototype.refresh = function(room) {
   this.$users.empty();
   room.users.forEach(function(user) {
-    this.$users.append(this.createUser(user));
+    this.$users.append(this.createUserNode(user));
   }, this);
 
   this.$node.show();
@@ -54,7 +54,7 @@ Room.prototype.refresh = function(room) {
   this.chat.log('You have joined ' + room.name);
 };
 
-Room.prototype.createUser = function(user) {
+Room.prototype.createUserNode = function(user) {
   var $user = $(userHtml).attr('data-id', user.id);
   $user.find('.username').text(user.username);
   return $user;
