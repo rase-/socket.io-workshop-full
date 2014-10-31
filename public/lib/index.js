@@ -9,6 +9,4 @@ $(function() {
   new Login('.login.page');
   new Lobby('.lobby.page');
   new Room('.room.page');
-
-  $(document).trigger('login');
 });

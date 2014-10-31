@@ -14,8 +14,17 @@ function Header(selector) {
     self.$numUsers.text(num);
   });
 
-  $(document).on('headerTitle', function(e, title) {
-    self.$node.toggle(!!title);
-    self.$title.text(title || '');
+  socket.on('join lobby', function() {
+    self.$node.show();
+    self.setTitle('Lobby');
   });
+
+  socket.on('join room', function(room) {
+    self.$node.show();
+    self.setTitle(room.name);
+  });
+};
+
+Header.prototype.setTitle = function(title) {
+  this.$title.text(title);
 };

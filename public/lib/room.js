@@ -15,19 +15,30 @@ function Room(selector) {
 
   var self = this;
 
-  $(document).on('room', function(e, room) {
-    self.refresh(room);
+  this.$leaveRoom.click(function() {
+    socket.emit('leave room');
   });
 
-  this.$leaveRoom.click(function() {
-    socket.emit('leave room', function(rooms) {
-      self.backToLobby(rooms);
+  socket.on('join room', function(room) {
+    self.chat.refresh();
+    self.chat.log('You have joined ' + room.name);
+
+    self.$users.empty();
+    room.users.forEach(function(user) {
+      self.$users.append(createUserNode(user));
     });
+
+    self.$node.show();
+    self.chat.focus();
+  });
+
+  socket.on('leave room', function(room) {
+    self.$node.hide();
   });
 
   socket.on('user joined', function(user) {
     self.chat.log(user.username + ' joined');
-    self.$users.append(self.createUserNode(user));
+    self.$users.append(createUserNode(user));
   });
 
   socket.on('user left', function(user) {
@@ -35,33 +46,15 @@ function Room(selector) {
     self.$users.find('.user[data-id=' + user.id + ']').remove();
   });
 
-  socket.on('room closed', function(rooms) {
+  socket.on('room closed', function(room) {
     alert('The game was closed');
-    self.backToLobby(rooms);
+    self.$node.hide();
   });
 }
 
-Room.prototype.refresh = function(room) {
-  this.$users.empty();
-  room.users.forEach(function(user) {
-    this.$users.append(this.createUserNode(user));
-  }, this);
-
-  this.$node.show();
-  this.$node.trigger('headerTitle', room.name);
-
-  this.chat.refresh();
-  this.chat.log('You have joined ' + room.name);
-};
-
-Room.prototype.createUserNode = function(user) {
+function createUserNode(user) {
   var $user = $(userHtml).attr('data-id', user.id);
   $user.find('.username').text(user.username);
   return $user;
-};
-
-Room.prototype.backToLobby = function(rooms) {
-  this.$node.hide();
-  this.$node.trigger('lobby', [rooms]);
-};
+}
 

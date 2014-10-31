@@ -31,25 +31,29 @@ function Chat(selector, opts) {
 
 Chat.prototype.refresh = function() {
   this.$messages.empty();
+  this.focus();
+};
+
+Chat.prototype.focus = function() {
   this.$input.focus();
 };
 
 Chat.prototype.log = function(message) {
-  this.$messages.append(this.createLog(message));
+  this.$messages.append(createLog(message));
 };
 
 Chat.prototype.addMessage = function(user, message) {
-  this.createMessage(user, message).appendTo(this.$messages);
+  createMessage(user, message).appendTo(this.$messages);
   this.$messages[0].scrollTop = this.$messages[0].scrollHeight;
 };
 
-Chat.prototype.createMessage = function(user, message) {
+function createMessage(user, message) {
   var $message = $(messageHtml);
   $message.find('.username').text(user.username);
   $message.find('.body').text(message);
   return $message;
-};
+}
 
-Chat.prototype.createLog = function(text) {
+function createLog(text) {
   return $(logHtml).text(text);
 };
