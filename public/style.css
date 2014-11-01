@@ -35,6 +35,11 @@ ul {
   cursor: pointer;
 }
 
+.btn[disabled],
+.btn[disabled]:hover {
+  background-color: #ccc;
+}
+
 .btn-info {
   background-color: #5bc0de;
   color: #fff;
