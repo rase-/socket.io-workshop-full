@@ -31,7 +31,7 @@ function Lobby(selector) {
 
     self.$rooms.empty();
     rooms.forEach(function(room) {
-      self.$rooms.prepend(createRoomNode(room));
+      self.$rooms.append(createRoomNode(room));
     });
 
     self.$node.show();
@@ -47,7 +47,7 @@ function Lobby(selector) {
     if ($room.length) {
       $room.find('.num-users').text(room.users.length);
     } else {
-      self.$rooms.prepend(createRoomNode(room));
+      self.$rooms.append(createRoomNode(room));
     }
   });
 

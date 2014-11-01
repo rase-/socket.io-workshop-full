@@ -8,16 +8,12 @@ module.exports = Room;
 
 function Room(selector) {
   this.$node = $(selector);
-  this.$leaveRoom = this.$node.find('.leave-room');
+  this.$startGame = this.$node.find('.start-game');
   this.$users = this.$node.find('.users');
 
   this.chat = new Chat(this.$node.find('.chat'));
 
   var self = this;
-
-  this.$leaveRoom.click(function() {
-    socket.emit('leave room');
-  });
 
   socket.on('join room', function(room) {
     self.chat.refresh();
@@ -27,6 +23,10 @@ function Room(selector) {
     room.users.forEach(function(user) {
       self.$users.append(createUserNode(user));
     });
+
+    var isOwn = room.users[0].id === socket.user.id;
+    self.$node.toggleClass('own', isOwn);
+    self.$startGame.toggle(isOwn);
 
     self.$node.show();
     self.chat.focus();
