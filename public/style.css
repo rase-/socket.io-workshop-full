@@ -60,9 +60,12 @@ ul {
 
 /* Header */
 
+.full-screen .header {
+  display: none;
+}
+
 .header {
   box-shadow: 0 1px 5px rgba(0,0,0,.3);
-  display: none;
   height: 40px;
   padding: 0;
   position: absolute;
@@ -83,7 +86,7 @@ ul {
 
 .header .back {
   display: none;
-  font-size: 100%;
+  font-size: 80%;
   height: 40px;
   left: 0;
   position: absolute;
@@ -91,6 +94,10 @@ ul {
 }
 
 /* Pages */
+
+.full-screen .pages {
+  padding-top: 0;
+}
 
 .pages {
   height: 100%;
@@ -147,7 +154,7 @@ ul {
   font-size: 150%;
   height: 100%;
   margin: 0;
-  padding: 43px 0px 0px 0px;
+  padding: 40px 0px 0px 0px;
 }
 
 .lobby.page .rooms .room {
@@ -208,12 +215,13 @@ ul {
   height: 100%;
   width: 25%;
   position: relative;
+  text-overflow: ellipsis;
 }
 
 .page .sidebar button {
   font-size: 17.5px;
   height: 43px;
-  padding: 11px 19px;
+  padding: 11px 11px;
   width: 100%;
   position: absolute;
 }
@@ -221,6 +229,7 @@ ul {
 /* Messages */
 
 .messages {
+  border-right: 1px solid #eee;
   font-size: 150%;
   height: 100%;
   margin: 0;

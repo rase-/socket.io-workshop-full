@@ -26,6 +26,10 @@ function Lobby(selector) {
   });
 
   socket.on('join lobby', function(rooms) {
+    self.$node
+      .trigger('fullScreen', false)
+      .trigger('header', { title: 'Lobby' });
+
     self.chat.refresh();
     self.chat.log('Welcome to the game');
 

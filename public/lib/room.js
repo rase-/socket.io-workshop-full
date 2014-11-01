@@ -22,6 +22,17 @@ function Room(selector) {
 
   socket.on('join room', function(room) {
     self.room = room;
+
+    self.$node.trigger('header', {
+      title: room.name,
+      backBtn: {
+        label: 'Back to the Lobby',
+        onClick: function() {
+          socket.emit('leave room');
+        }
+      }
+    });
+
     self.chat.refresh();
     self.chat.log('You have joined ' + room.name);
 
@@ -64,6 +75,11 @@ function Room(selector) {
 
   socket.on('room closed', function(room) {
     alert('The game was closed');
+    self.$node.hide();
+  });
+
+  socket.on('game started', function(room) {
+    // TODO
     self.$node.hide();
   });
 }
