@@ -1,6 +1,7 @@
 var $ = require('jquery');
 var io = require('socket.io-client');
 var Chat = require('./chat');
+var GameView = require('./game-view');
 var socket = io();
 var userHtml = $('#template-user').html();
 
@@ -79,8 +80,8 @@ function Room(selector) {
   });
 
   socket.on('game started', function(room) {
-    // TODO
     self.$node.hide();
+    new GameView('body', socket.user);
   });
 }
 

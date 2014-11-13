@@ -8,6 +8,7 @@ var port = process.env.PORT || 3000;
 app.use(express.static(__dirname + '/public'));
 
 var roomMap = {};
+var activeGames = {};
 var numUsers = 0;
 
 io.on('connection', function(socket) {
@@ -74,6 +75,9 @@ io.on('connection', function(socket) {
     delete roomMap[room.id];
     io.in(room.id).emit('game started', room);
     socket.broadcast.to('lobby').emit('room removed', room.id);
+
+    // add new active game
+    activeGames[room.id] = room;
   });
 
   socket.on('disconnect', function() {
@@ -84,6 +88,27 @@ io.on('connection', function(socket) {
       numUsers--;
       io.emit('num users', numUsers);
     }
+  });
+});
+
+var uidToSid = {};
+io.of('/game').on('connection', function(socket) {
+  socket.on('join', function(userData) {
+    socket.user = userData;
+    uidToSid[socket.user.id] = socket.id;
+  });
+
+  socket.on('player:sync', function(data) {
+    socket.broadcast.emit('player:sync', { id: socket.user.id, motion:  data.motion, health: data.health });
+  });
+
+  socket.on('player:hit', function(playerID) {
+    socket.to(uidToSid[playerID]).emit('player:hit', { damage: 10 });
+  });
+
+  socket.on('disconnect', function() {
+    delete uidToSid[socket.user.id];
+    socket.broadcast.emit('player:disconnected', socket.user.id);
   });
 });
 
