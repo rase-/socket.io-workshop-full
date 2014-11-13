@@ -182,7 +182,7 @@ Game.prototype.gameLoop = function(dt) {
   this.fireShotgun();
 };
 
-Game.prototype.start = function(gameViewportSize, userData) {
+Game.prototype.start = function(gameViewportSize, userData, roomName) {
   // Create player entity
   this.hero = new Hero(this.renderer.camera, 2.0);
 
@@ -200,7 +200,7 @@ Game.prototype.start = function(gameViewportSize, userData) {
 
   // Communication
   this.network = new Network();
-  this.network.join(userData);
+  this.network.join(userData, roomName);
   this.network.on('sync', function(motionData) {
     if (!this.players[motionData.id]) {
       this.players[motionData.id] = new Player(motionData.id, this.assets.playerModel.clone());

@@ -93,13 +93,15 @@ io.on('connection', function(socket) {
 
 var uidToSid = {};
 io.of('/game').on('connection', function(socket) {
-  socket.on('join', function(userData) {
-    socket.user = userData;
+  socket.on('join', function(data) {
+    socket.user = data.userData;
+    socket.room = data.roomName;
+    socket.join(data.roomName);
     uidToSid[socket.user.id] = socket.id;
   });
 
   socket.on('player:sync', function(data) {
-    socket.broadcast.emit('player:sync', { id: socket.user.id, motion:  data.motion, health: data.health });
+    socket.to(socket.room).emit('player:sync', { id: socket.user.id, motion:  data.motion, health: data.health });
   });
 
   socket.on('player:hit', function(playerID) {
@@ -108,7 +110,7 @@ io.of('/game').on('connection', function(socket) {
 
   socket.on('disconnect', function() {
     delete uidToSid[socket.user.id];
-    socket.broadcast.emit('player:disconnected', socket.user.id);
+    socket.to(socket.room).emit('player:disconnected', socket.user.id);
   });
 });
 

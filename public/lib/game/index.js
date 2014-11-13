@@ -12,7 +12,7 @@ var input = require('./lib/input');
 var keys = require('./lib/keys');
 
 // Game init function
-function init(userData) {
+function init(userData, roomName) {
   // load game assets
   // http://css-tricks.com/multiple-simultaneous-ajax-requests-one-callback-jquery/
   $.when(
@@ -81,7 +81,7 @@ function init(userData) {
       width: window.innerWidth, height: window.innerHeight
     }};
 
-    game.start(gameViewportSize, userData);
+    game.start(gameViewportSize, userData, roomName);
   }).fail(function(err, msg) {
     console.log(err, msg);
   });

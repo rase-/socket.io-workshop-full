@@ -14,8 +14,8 @@ function Network() {
   this.socket.on('player:disconnected', function(id) { this.emit('disconnect', id); }.bind(this));
 }
 
-Network.prototype.join = function(userData) {
-  this.socket.emit('join', userData);
+Network.prototype.join = function(userData, roomName) {
+  this.socket.emit('join', { userData: userData, roomName: roomName });
 };
 
 Network.prototype.sendPlayerData = function(data) {
