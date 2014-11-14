@@ -8,11 +8,11 @@ sticky(function() {
   var app = express();
   var http = require('http').Server(app);
   var io = require('socket.io')(http);
+  var redis = require('redis').createClient();
 
   app.use(express.static(__dirname + '/public'));
 
   var roomMap = {};
-  var numUsers = 0;
 
   var activeGames = {};
   var uidToSid = {};
@@ -34,8 +34,10 @@ sticky(function() {
       };
       socket.emit('login', socket.user);
 
-      numUsers++;
-      io.emit('num users', numUsers);
+      redis.incr('num users', function(err, numUsers) {
+        if (err) return;
+        io.emit('num users', numUsers);
+      });
 
       joinLobby(socket);
     });
@@ -45,8 +47,10 @@ sticky(function() {
 
       if (socket.user) {
         delete socket.user;
-        numUsers--;
-        io.emit('num users', numUsers);
+        redis.decr('num users', function(err, numUsers) {
+          if (err) return;
+          io.emit('num users', numUsers);
+        });
       }
     });
 
