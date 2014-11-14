@@ -32,6 +32,18 @@
           <ul class="rooms"></ul>
         </div>
       </li>
+      <li class="room page">
+        <div class="chat">
+          <ul class="messages"></ul>
+          <form>
+            <input class="message" autocomplete="off"/>
+          </form>
+        </div>
+        <div class="sidebar">
+          <button class="start-game btn btn-info" type="button" disabled>Start the game!</button>
+          <ul class="users"></ul>
+        </div>
+      </li>
     </ul>
   </div>
   <script type="text/html" id="template-message">
@@ -47,6 +59,11 @@
     <li class="room" data-id="">
       <span class="roomname"></span>
       <span class="badge num-users"></span>
+    </li>
+  </script>
+  <script type="text/html" id="template-user">
+    <li class="user" data-id="">
+      <span class="username"></span>
     </li>
   </script>
 
