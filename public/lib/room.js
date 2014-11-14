@@ -44,6 +44,13 @@ function Room(selector) {
     self.$node.show();
     self.chat.focus();
   });
+
+  socket.on('user joined', function(user) {
+    self.room.users.push(user);
+    self.chat.log(user.username + ' joined');
+    self.$users.append(createUserNode(user));
+    self.$startGame.prop('disabled', !self.startable);
+  });
 }
 
 Room.prototype.startable = function() {
