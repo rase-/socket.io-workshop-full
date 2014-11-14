@@ -320,7 +320,7 @@ body.game {
   list-style-type: none;
 }
 
-.hud #hurtOverlay {
+.hud #hurt-overlay {
   background-color: red;
   display: none;
   left: 0;
