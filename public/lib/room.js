@@ -50,7 +50,7 @@ function Room(selector) {
     self.chat.focus();
   });
 
-  socket.on('leave room', function(room) {
+  socket.on('leave room', function() {
     self.room = null;
     self.$node.hide();
   });
@@ -76,6 +76,7 @@ function Room(selector) {
 
   socket.on('room closed', function(room) {
     alert('The game was closed');
+    socket.emit('leave room');
     self.$node.hide();
   });
 
