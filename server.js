@@ -109,7 +109,7 @@ sticky(function() {
                     return obj;
                   }, { max: -Infinity, user: null });
 
-                  socket.to(newRoom.id).emit('winner', best.user);
+                  io.of('/game').emit('winner', best.user);
                 });
               });
             }, 180000);
@@ -141,7 +141,7 @@ sticky(function() {
         socket.room = room;
 
         socket.join(data.roomData.id);
-        redis.hset('uid to sid', socket.user.id, socket.id)
+        redis.hset('uid to sid', socket.user.id, socket.id);
 
         room.users.push(socket.user);
 
