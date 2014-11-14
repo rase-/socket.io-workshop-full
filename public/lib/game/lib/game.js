@@ -30,7 +30,6 @@ Game.prototype.checkHeroOutOfBounds = function() {
   var motion = this.hero.motion;
   if (motion.position.y < -123) {
     this.hero.reset();
-    this.hud.update();
   }
 };
 
@@ -71,6 +70,12 @@ Game.prototype.handleKeyboardControls = function() {
 
   var shotgun = this.hero.shotgun;
   shotgun.pullingTrigger = keysPressed[keys.SP] || false;
+
+  if (keysPressed[keys.TAB]) {
+    this.hud.showAllPoints();
+  } else {
+    this.hud.hideAllPoints();
+  }
 };
 
 Game.prototype.fireShotgun = function() {
@@ -157,7 +162,6 @@ Game.prototype.applyDamage = function() {
         if (0 === this.players[id].health) {
           // If hit killed the player, increment points. Player will be respawned on the other end
           this.hero.points++;
-          this.hud.update(this.hero.health, this.hero.points);
         } else {
           // If player hit but not killed, render pain animation
           this.players[id].body.object.playOnce('pain', 1);
@@ -190,17 +194,19 @@ Game.prototype.gameLoop = function(dt) {
   this.handleKeyboardControls();
   this.applyPhysics(dt, this.motions());
   this.fireShotgun();
+  this.hud.update();
 };
 
 Game.prototype.start = function(gameViewportSize, userData, roomName) {
   // Create player entity
-  this.hero = new Hero(this.renderer.camera, 2.0);
+  this.hero = new Hero(this.renderer.camera, 2.0, userData.username);
 
   // Players
   this.players = {};
 
   // Initialize HUD
-  this.hud = new HUD(this.hero);
+  this.hud = new HUD(this.hero, this.players);
+  this.hud.hideAllPoints();
 
   // Configure physics
   this.applyPhysics = physics(this.assets.arenaModel);
@@ -212,22 +218,22 @@ Game.prototype.start = function(gameViewportSize, userData, roomName) {
   this.network = new Network();
   this.network.join(userData, roomName);
   this.network.on('sync', function(motionData) {
+    console.log(motionData);
     if (!this.players[motionData.id]) {
-      this.players[motionData.id] = new Player(motionData.id, this.assets.playerModel.clone());
+      this.players[motionData.id] = new Player(motionData.id, motionData.username, this.assets.playerModel.clone());
       this.renderer.registerPlayer(this.players[motionData.id]);
     }
 
     this.players[motionData.id].motion.update(motionData.motion);
     this.players[motionData.id].health = motionData.health;
+    this.players[motionData.id].points = motionData.points;
   }.bind(this));
 
   this.network.on('hit', function(data) {
     this.hero.health -= data.damage;
     if (this.hero.health <= 0) {
       this.hero.reset();
-      this.hud.update();
     }
-    this.hud.update(this.hero.health, this.hero.points);
     this.hud.flashRed();
   }.bind(this));
 
@@ -238,7 +244,7 @@ Game.prototype.start = function(gameViewportSize, userData, roomName) {
 
   // Send player data periodically
   setInterval(function() {
-    this.network.sendPlayerData({ health: this.hero.health, motion: this.hero.motion });
+    this.network.sendPlayerData({ health: this.hero.health, motion: this.hero.motion, points: this.hero.points, username: this.hero.username });
   }.bind(this), 10);
 
   this.renderer.attachResize(gameViewportSize);
@@ -254,9 +260,6 @@ Game.prototype.start = function(gameViewportSize, userData, roomName) {
     this.renderer.render(timeElapsed, this.hero, this.players);
     requestAnimationFrame(render);
   }.bind(this);
-
-  // Initialize HUD
-  this.hud.update();
 
   requestAnimationFrame(render);
 };

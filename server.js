@@ -101,7 +101,7 @@ io.of('/game').on('connection', function(socket) {
   });
 
   socket.on('player:sync', function(data) {
-    socket.to(socket.room).emit('player:sync', { id: socket.user.id, motion:  data.motion, health: data.health });
+    socket.to(socket.room).emit('player:sync', { id: socket.user.id, motion:  data.motion, health: data.health, points: data.points, username: data.username });
   });
 
   socket.on('player:hit', function(playerID) {

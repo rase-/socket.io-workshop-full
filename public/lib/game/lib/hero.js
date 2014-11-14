@@ -5,7 +5,8 @@ var Motion = require('./motion');
 // Respawn points
 var spawnPoints = [ { x: -2, y: 7.6, z: 25 }, { x: -18.6, y: 7.6, z: -10.9 }, { x: 19.6, y: 7.6, z: -11 }, { x: 0.22, y: 5.3, z: 5.86 } ];
 
-function Hero(object, height) {
+function Hero(object, height, username) {
+  this.username = username;
   this.health = 100;
   this.points = 0;
   this.shotgun = new Shotgun();

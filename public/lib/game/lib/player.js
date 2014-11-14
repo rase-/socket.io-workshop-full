@@ -1,8 +1,10 @@
 var Body = require('./body');
 var Motion = require('./motion');
 
-function Player(playerID, model) {
+function Player(playerID, username, model) {
+  this.username = username;
   this.health = 100;
+  this.points = 0;
 
   // Render target
   model.scale.set(0.04, 0.04, 0.04);

@@ -3,7 +3,7 @@ var keys = require('./keys');
 
 var keysPressed = {};
 
-var watchedKeyCodes = [keys.SP, keys.W, keys.A, keys.S, keys.D, keys.UP, keys.LT, keys.DN, keys.RT];
+var watchedKeyCodes = [keys.SP, keys.W, keys.A, keys.S, keys.D, keys.UP, keys.LT, keys.DN, keys.RT, keys.TAB];
 
 function handler(down) {
   return function(e) {
