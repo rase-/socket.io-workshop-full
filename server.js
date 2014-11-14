@@ -10,6 +10,8 @@ app.use(express.static(__dirname + '/public'));
 var roomMap = {};
 var numUsers = 0;
 
+var activeGames = {};
+
 io.on('connection', function(socket) {
 
   socket.on('login', function(username) {
@@ -68,6 +70,24 @@ io.on('connection', function(socket) {
   socket.on('leave room', function() {
     if (!socket.user) return;
     joinLobby(socket);
+  });
+
+  socket.on('start game', function() {
+    if (!socket.user) return;
+
+    var room = roomMap[socket.roomId];
+    if (!room) return;
+
+      // check the game starter by owner
+      var i = room.sockets.indexOf(socket);
+      if (0 !== i) return;
+
+      delete roomMap[room.id];
+      io.in(room.id).emit('game started', room);
+      socket.broadcast.to('lobby').emit('room removed', room.id);
+
+      // add new active game
+      activeGames[room.id] = new Room(socket.user);
   });
 });
 

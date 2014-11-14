@@ -18,7 +18,7 @@ function Room(selector) {
   var self = this;
 
   this.$startGame.click(function() {
-    new GameView('.wrapper', 'test', 'test');
+    socket.emit('start game');
   });
 
   socket.on('join room', function(room) {
@@ -82,6 +82,7 @@ function Room(selector) {
 
   socket.on('game started', function(room) {
     self.$node.hide();
+    new GameView('.wrapper', socket.user, room);
   });
 }
 
