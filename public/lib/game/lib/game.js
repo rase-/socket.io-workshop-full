@@ -34,6 +34,10 @@ Game.prototype.checkHeroOutOfBounds = function() {
 };
 
 Game.prototype.handleKeyboardControls = function() {
+  if (this.freezeControls) {
+    return;
+  }
+
   var keysPressed = input.keysPressed();
   var motion = this.hero.motion;
   if(!motion.airborne) {
@@ -197,7 +201,7 @@ Game.prototype.gameLoop = function(dt) {
   this.hud.update();
 };
 
-Game.prototype.start = function(gameViewportSize, userData, roomName) {
+Game.prototype.start = function(gameViewportSize, userData, roomData) {
   // Create player entity
   this.hero = new Hero(this.renderer.camera, 2.0, userData.username);
 
@@ -216,9 +220,8 @@ Game.prototype.start = function(gameViewportSize, userData, roomName) {
 
   // Communication
   this.network = new Network();
-  this.network.join(userData, roomName);
+  this.network.join(userData, roomData);
   this.network.on('sync', function(motionData) {
-    console.log(motionData);
     if (!this.players[motionData.id]) {
       this.players[motionData.id] = new Player(motionData.id, motionData.username, this.assets.playerModel.clone());
       this.renderer.registerPlayer(this.players[motionData.id]);
@@ -240,6 +243,14 @@ Game.prototype.start = function(gameViewportSize, userData, roomName) {
   this.network.on('disconnect', function(playerID) {
     this.renderer.unregisterPlayer(this.players[playerID]);
     delete this.players[playerID];
+  }.bind(this));
+
+  this.network.on('winner', function(playerData) {
+    this.hud.end(playerData);
+    this.freezeControls = true;
+    setTimeout(function() {
+      window.location.href = '/';
+    }, 2000);
   }.bind(this));
 
   // Send player data periodically

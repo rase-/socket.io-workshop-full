@@ -12,10 +12,11 @@ function Network() {
   this.socket.on('player:sync', function(motion) { this.emit('sync', motion); }.bind(this));
   this.socket.on('player:hit', function(data) { this.emit('hit', data); }.bind(this));
   this.socket.on('player:disconnected', function(id) { this.emit('disconnect', id); }.bind(this));
+  this.socket.on('winner', function(player) { this.emit('winner', player); }.bind(this));
 }
 
-Network.prototype.join = function(userData, roomName) {
-  this.socket.emit('join', { userData: userData, roomName: roomName });
+Network.prototype.join = function(userData, roomData) {
+  this.socket.emit('join', { userData: userData, roomData: roomData });
 };
 
 Network.prototype.sendPlayerData = function(data) {

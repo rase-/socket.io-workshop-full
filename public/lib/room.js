@@ -81,7 +81,7 @@ function Room(selector) {
 
   socket.on('game started', function(room) {
     self.$node.hide();
-    new GameView('.wrapper', socket.user, self.room.name);
+    new GameView('.wrapper', socket.user, room);
   });
 }
 

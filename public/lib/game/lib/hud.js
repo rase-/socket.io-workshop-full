@@ -22,6 +22,9 @@ HUD.prototype.update = function() {
   var $playerInfo = this.$allPointsOverlay.append($('#template-all-points').html());
   $playerInfo.find('.username').text(this.hero.username);
   $playerInfo.find('.points').text(this.hero.points);
+  if (this.winner && this.hero.username === this.winner.username) {
+    $playerInfo.css('color', 'green');
+  }
 
   var self = this;
   Object.keys(this.players).forEach(function(id) {
@@ -31,7 +34,16 @@ HUD.prototype.update = function() {
     var $playerInfo = $('.hud #all-points .player:last');
     $playerInfo.find('.username').text(player.username);
     $playerInfo.find('.points').text(player.points);
+    if (self.winner && player.username === self.winner.username) {
+      $playerInfo.css('color', 'green');
+    }
   });
+};
+
+HUD.prototype.end = function(playerData) {
+  this.lockPointsToggle = true;
+  this.winner = playerData;
+  this.showAllPoints();
 };
 
 HUD.prototype.showAllPoints = function() {
@@ -39,7 +51,9 @@ HUD.prototype.showAllPoints = function() {
 };
 
 HUD.prototype.hideAllPoints = function() {
-  this.$allPointsOverlay.hide();
+  if (!this.lockPointsToggle) {
+    this.$allPointsOverlay.hide();
+  }
 };
 
 HUD.prototype.flashRed = function() {

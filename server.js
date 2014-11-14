@@ -8,8 +8,12 @@ var port = process.env.PORT || 3000;
 app.use(express.static(__dirname + '/public'));
 
 var roomMap = {};
-var activeGames = {};
 var numUsers = 0;
+
+// Variables needed by game
+var activeGames = {};
+var uidToSid = {};
+var points = {};
 
 io.on('connection', function(socket) {
 
@@ -77,7 +81,22 @@ io.on('connection', function(socket) {
     socket.broadcast.to('lobby').emit('room removed', room.id);
 
     // add new active game
-    activeGames[room.id] = room;
+    activeGames[room.id] = new Room(socket.user);
+    setTimeout(function() {
+      var newRoom = activeGames[room.id];
+      var best = newRoom.sockets.reduce(function(obj, socket) {
+        var p = points[socket.user.id];
+        if (p > obj.max) {
+          return { socket: socket, max: p };
+        }
+
+        return obj;
+      }, { max: -Infinity, socket: null });
+
+      newRoom.sockets.forEach(function(socket) {
+        socket.emit('winner', best.socket.user);
+      });
+    }, 180000);
   });
 
   socket.on('disconnect', function() {
@@ -91,17 +110,22 @@ io.on('connection', function(socket) {
   });
 });
 
-var uidToSid = {};
 io.of('/game').on('connection', function(socket) {
   socket.on('join', function(data) {
     socket.user = data.userData;
-    socket.room = data.roomName;
-    socket.join(data.roomName);
+
+    var room = activeGames[data.roomData.id];
+    socket.room = room;
+
+    socket.join(data.roomData.id);
     uidToSid[socket.user.id] = socket.id;
+
+    activeGames[data.roomData.id].sockets.push(socket);
   });
 
   socket.on('player:sync', function(data) {
-    socket.to(socket.room).emit('player:sync', { id: socket.user.id, motion:  data.motion, health: data.health, points: data.points, username: data.username });
+    points[socket.user.id] = data.points;
+    socket.to(socket.room.id).emit('player:sync', { id: socket.user.id, motion:  data.motion, health: data.health, points: data.points, username: data.username });
   });
 
   socket.on('player:hit', function(playerID) {
@@ -110,7 +134,7 @@ io.of('/game').on('connection', function(socket) {
 
   socket.on('disconnect', function() {
     delete uidToSid[socket.user.id];
-    socket.to(socket.room).emit('player:disconnected', socket.user.id);
+    socket.to(socket.room.id).emit('player:disconnected', socket.user.id);
   });
 });
 
