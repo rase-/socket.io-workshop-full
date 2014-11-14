@@ -13,6 +13,6 @@ $(function() {
   new Room('.room.page');
 
   $(document).on('fullScreen', function(e, enabled) {
-    $('body').toggleClass('full-screen', enabled);
+    $('.wrapper').toggleClass('full-screen', enabled);
   });
 });
