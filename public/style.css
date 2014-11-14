@@ -305,7 +305,19 @@ body.game {
   color: white;
 }
 
-.hud #hurtOverlay {
+.hud #all-points {
+  position: absolute;
+  top: 100px;
+  left: 40px;
+  font-size: 20px;
+  color: white;
+}
+
+.hud #all-points li {
+  list-style-type: none;
+}
+
+.hud #hurt-overlay {
   background-color: red;
   display: none;
   left: 0;
