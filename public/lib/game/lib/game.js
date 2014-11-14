@@ -221,6 +221,22 @@ Game.prototype.start = function(gameViewportSize, userData, roomData) {
   // Array for shot objects
   this.shots = [];
 
+  this.network.on('sync', function(motionData) {
+    if (!this.players[motionData.id]) {
+      this.players[motionData.id] = new Player(motionData.id, motionData.username, this.assets.playerModel.clone());
+      this.renderer.registerPlayer(this.players[motionData.id]);
+    }
+
+    this.players[motionData.id].motion.update(motionData.motion);
+    this.players[motionData.id].health = motionData.health;
+    this.players[motionData.id].points = motionData.points;
+  }.bind(this));
+
+  // Send player data periodically
+  setInterval(function() {
+    this.network.sendPlayerData({ health: this.hero.health, motion: this.hero.motion, points: this.hero.points, username: this.hero.username });
+  }.bind(this), 10);
+
   this.renderer.attachResize(gameViewportSize);
 
   // Rendering loop

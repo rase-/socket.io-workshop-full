@@ -12,6 +12,7 @@ var numUsers = 0;
 
 var activeGames = {};
 var uidToSid = {};
+var points = {};
 
 io.on('connection', function(socket) {
 
@@ -94,7 +95,6 @@ io.on('connection', function(socket) {
 
 io.of('/game').on('connection', function(socket) {
   socket.on('join', function(data) {
-    console.log('aoe');
     socket.user = data.userData;
 
     var room = activeGames[data.roomData.id];
@@ -105,6 +105,11 @@ io.of('/game').on('connection', function(socket) {
 
     activeGames[data.roomData.id].sockets.push(socket);
   });
+
+  socket.on('player:sync', function(data) {
+    points[socket.user.id] = data.points;
+    socket.to(socket.room.id).emit('player:sync', { id: socket.user.id, motion:  data.motion, health: data.health, points: data.points, username: data.username });
+    });
 });
 
 http.listen(port, function() {
