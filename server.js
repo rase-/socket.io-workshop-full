@@ -1,8 +1,11 @@
 var sticky = require('sticky-session');
+var cluster = require('cluster');
 var redis = require('redis').createClient();
 var port = process.env.PORT || 3000;
 
-redis.flushall();
+if (cluster.isMaster) {
+  redis.flushall();
+}
 
 sticky(function() {
   var crypto = require('crypto');
