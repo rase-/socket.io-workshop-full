@@ -4,7 +4,7 @@ var redis = require('redis').createClient();
 var port = process.env.PORT || 3000;
 
 if (cluster.isMaster) {
-  redis.flushall();
+  redis.flushdb();
 }
 
 sticky(function() {
