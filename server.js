@@ -64,6 +64,11 @@ io.on('connection', function(socket) {
 
     join(socket, roomId);
   });
+
+  socket.on('leave room', function() {
+    if (!socket.user) return;
+    joinLobby(socket);
+  });
 });
 
 http.listen(port, function() {
@@ -81,6 +86,8 @@ function rooms() {
 }
 
 function joinLobby(socket) {
+  leave(socket);
+
   socket.join('lobby', function(err) {
     if (err) return;
 
@@ -122,6 +129,14 @@ function leave(socket) {
     socket.emit('leave lobby');
     return;
   }
+
+  var room = roomMap[roomId];
+  if (!room) return;
+
+  var i = room.sockets.indexOf(socket);
+  if (!~i) return;
+  room.sockets.splice(i, 1);
+  socket.emit('leave room', room);
 }
 
 function Room(user) {

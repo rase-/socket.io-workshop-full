@@ -51,6 +51,11 @@ function Room(selector) {
     self.$users.append(createUserNode(user));
     self.$startGame.prop('disabled', !self.startable);
   });
+
+  socket.on('leave room', function(room) {
+    self.room = null;
+    self.$node.hide();
+  });
 }
 
 Room.prototype.startable = function() {
