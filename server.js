@@ -123,14 +123,14 @@ sticky(function() {
     });
 
     socket.on('disconnect', function() {
-      leave(socket);
-
-      if (socket.user) {
-        delete socket.user;
-        redis.decr('num users', function(err, numUsers) {
-          io.emit('num users', numUsers);
-        });
-      }
+      leave(socket, function() {
+        if (socket.user) {
+          delete socket.user;
+          redis.decr('num users', function(err, numUsers) {
+            io.emit('num users', numUsers);
+          });
+        }
+      });
     });
   });
 
