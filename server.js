@@ -111,6 +111,10 @@ io.of('/game').on('connection', function(socket) {
     socket.to(socket.room.id).emit('player:sync', { id: socket.user.id, motion:  data.motion, health: data.health, points: data.points, username: data.username });
   });
 
+  socket.on('player:hit', function(playerID) {
+    socket.to(uidToSid[playerID]).emit('player:hit', { damage: 10 });
+  });
+
   socket.on('disconnect', function() {
     socket.to(socket.room.id).emit('player:disconnected', socket.user.id);
     delete uidToSid[socket.user.id];

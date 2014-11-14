@@ -162,6 +162,8 @@ Game.prototype.applyDamage = function() {
       transformedRay.copy( ray ).applyMatrix4( inverseMatrix );
       if (transformedRay.isIntersectionBox(this.players[id].body.object.geometry.boundingBox)) {
         // Notify player of hit
+        this.network.sendHit(id);
+
         this.players[id].health -= 10;
         if (0 === this.players[id].health) {
           // If hit killed the player, increment points. Player will be respawned on the other end
@@ -236,6 +238,14 @@ Game.prototype.start = function(gameViewportSize, userData, roomData) {
   setInterval(function() {
     this.network.sendPlayerData({ health: this.hero.health, motion: this.hero.motion, points: this.hero.points, username: this.hero.username });
   }.bind(this), 10);
+
+  this.network.on('hit', function(data) {
+    this.hero.health -= data.damage;
+    if (this.hero.health <= 0) {
+      this.hero.reset();
+    }
+    this.hud.flashRed();
+  }.bind(this));
 
   this.network.on('disconnect', function(playerID) {
     this.renderer.unregisterPlayer(this.players[playerID]);
