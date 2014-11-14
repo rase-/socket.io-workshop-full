@@ -17,7 +17,7 @@ html {
   -webkit-font-smoothing: antialiased;
 }
 
-html, body {
+html, body, .wrapper {
   height: 100%;
   margin: 0;
   padding: 0;
