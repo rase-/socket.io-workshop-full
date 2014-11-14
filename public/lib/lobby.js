@@ -15,6 +15,11 @@ function Lobby(selector) {
     socket.emit('add room');
   });
 
+  this.$rooms.on('click', '.room', function() {
+    var roomId = $(this).attr('data-id');
+    socket.emit('join room', roomId);
+  });
+
   socket.on('join lobby', function(rooms) {
     self.$node
       .trigger('fullScreen', false)
@@ -33,8 +38,16 @@ function Lobby(selector) {
   });
 
   socket.on('room updated', function(room) {
-    console.log(room);
-    self.$rooms.append(createRoomNode(room));
+    var $room = self.$rooms.find('.room[data-id=' + room.id + ']');
+    if ($room.length) {
+      $room.find('.num-users').text(room.users.length);
+    } else {
+      self.$rooms.append(createRoomNode(room));
+    }
+  });
+
+  socket.on('room removed', function(roomId) {
+    self.$rooms.find('.room[data-id=' + roomId + ']').remove();
   });
 };
 
