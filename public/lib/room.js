@@ -1,6 +1,7 @@
 var $ = require('jquery');
 var io = require('socket.io-client');
 var Chat = require('./chat');
+var GameView = require('./game-view');
 var socket = io();
 var userHtml = $('#template-user').html();
 
@@ -15,6 +16,10 @@ function Room(selector) {
   this.room = null;
 
   var self = this;
+
+  this.$startGame.click(function() {
+    new GameView('.wrapper', 'test', 'test');
+  });
 
   socket.on('join room', function(room) {
     self.room = room;
@@ -72,6 +77,10 @@ function Room(selector) {
 
   socket.on('room closed', function(room) {
     alert('The game was closed');
+    self.$node.hide();
+  });
+
+  socket.on('game started', function(room) {
     self.$node.hide();
   });
 }
