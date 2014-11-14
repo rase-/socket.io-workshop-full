@@ -147,7 +147,7 @@ Game.prototype.applyDamage = function() {
       if (transformedRay.isIntersectionBox(this.players[id].body.object.geometry.boundingBox)) {
         this.network.sendHit(id);
         this.players[id].health -= 10;
-        if (this.players[id].health <= 0) {
+        if (0 === this.players[id].health) {
           this.hero.points++;
           this.hud.update(this.hero.health, this.hero.points);
         } else {
