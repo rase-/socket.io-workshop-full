@@ -46,6 +46,16 @@ function uid() {
   return crypto.randomBytes(16).toString('hex');
 }
 
-function joinLobby(socket) {
+function rooms() {
   // TODO
+  return [];
+}
+
+function joinLobby(socket) {
+  socket.join('lobby', function(err) {
+    if (err) return;
+
+    socket.roomId = 'lobby';
+    socket.emit('join lobby', rooms());
+  });
 }
