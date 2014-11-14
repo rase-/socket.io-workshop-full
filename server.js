@@ -1,6 +1,7 @@
 var crypto = require('crypto');
 var express = require('express');
 var sticky = require('sticky-session');
+var redis = require('socket.io-redis');
 var port = process.env.PORT || 3000;
 
 var roomMap = {};
@@ -18,6 +19,8 @@ sticky(function() {
   var io = require('socket.io')(http);
 
   app.use(express.static(__dirname + '/public'));
+
+  io.adapter(redis({ host: 'localhost', port: 6379 }));
 
   io.on('connection', function(socket) {
 
