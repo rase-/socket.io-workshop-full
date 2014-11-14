@@ -237,6 +237,11 @@ Game.prototype.start = function(gameViewportSize, userData, roomData) {
     this.network.sendPlayerData({ health: this.hero.health, motion: this.hero.motion, points: this.hero.points, username: this.hero.username });
   }.bind(this), 10);
 
+  this.network.on('disconnect', function(playerID) {
+    this.renderer.unregisterPlayer(this.players[playerID]);
+    delete this.players[playerID];
+  }.bind(this));
+
   this.renderer.attachResize(gameViewportSize);
 
   // Rendering loop

@@ -10,6 +10,7 @@ Network.prototype.__proto__ = EventEmitter.prototype;
 function Network() {
   this.socket = io('http://localhost:3000/game');
   this.socket.on('player:sync', function(motion) { this.emit('sync', motion); }.bind(this));
+  this.socket.on('player:disconnected', function(id) { this.emit('disconnect', id); }.bind(this));
 }
 
 Network.prototype.join = function(userData, roomData) {
