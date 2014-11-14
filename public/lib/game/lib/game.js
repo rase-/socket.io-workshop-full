@@ -6,7 +6,7 @@ var Network = require('./network');
 var Renderer = require('./renderer');
 var HUD = require('./hud');
 
-// Components and component management
+// Game components
 var Hero = require('./hero');
 var Player = require('./player');
 var Shotgun = require('./shotgun');
@@ -55,10 +55,15 @@ Game.prototype.handleKeyboardControls = function() {
     // calculate sideways direction from forward direction
     sideways.set(forward.z, 0, -forward.x);
 
+    // Move slightly forwards or backwards if W ar S pressed
     forward.multiplyScalar(keysPressed[keys.W] ? -0.1 : (keysPressed[keys.S] ? 0.1 : 0));
+    // Move slightly to the left or right if A ar D pressed
     sideways.multiplyScalar(keysPressed[keys.A] ? -0.1 : (keysPressed[keys.D] ? 0.1 : 0));
 
+    // Total movement on this frame (you can move both forward and sideways)
     var combined = forward.add(sideways);
+
+    // If the player is already moving but not as fast, speed up
     if(Math.abs(combined.x) >= Math.abs(motion.velocity.x)) motion.velocity.x = combined.x;
     if(Math.abs(combined.y) >= Math.abs(motion.velocity.y)) motion.velocity.y = combined.y;
     if(Math.abs(combined.z) >= Math.abs(motion.velocity.z)) motion.velocity.z = combined.z;
@@ -140,17 +145,21 @@ Game.prototype.applyDamage = function() {
   this.shots.forEach(function(shot) {
     var ray = shot.ray;
     for (var id in this.players) {
+      // Check collision to player with raycast
       var transformedRay = new THREE.Ray();
       var inverseMatrix = new THREE.Matrix4();
       inverseMatrix.getInverse( this.players[id].body.object.matrixWorld );
       transformedRay.copy( ray ).applyMatrix4( inverseMatrix );
       if (transformedRay.isIntersectionBox(this.players[id].body.object.geometry.boundingBox)) {
+        // Notify player of hit
         this.network.sendHit(id);
         this.players[id].health -= 10;
         if (0 === this.players[id].health) {
+          // If hit killed the player, increment points. Player will be respawned on the other end
           this.hero.points++;
           this.hud.update(this.hero.health, this.hero.points);
         } else {
+          // If player hit but not killed, render pain animation
           this.players[id].body.object.playOnce('pain', 1);
         }
 
@@ -174,6 +183,7 @@ Game.prototype.playerObjects = function() {
   }.bind(this));
 };
 
+// Order of steps on each frame drawn
 Game.prototype.gameLoop = function(dt) {
   this.applyDamage();
   this.checkHeroOutOfBounds();

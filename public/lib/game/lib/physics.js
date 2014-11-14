@@ -45,20 +45,20 @@ module.exports = function(arenaModel) {
         }
 
         if(motion.airborne) {
-          // free fall: apply the gravity
+          // free fall: apply the gravity (more pull little by little)
           motion.velocity.y -= 0.01;
         }
 
-
+        // Slow down player movement (has an effect vhen buttons not pressed)
         angles.copy(motion.spinning).multiplyScalar(time);
         if(!motion.airborne) motion.spinning.multiplyScalar(damping);
-
         displacement.copy(motion.velocity).multiplyScalar(time);
         if(!motion.airborne) motion.velocity.multiplyScalar(damping);
 
         motion.rotation.add(angles);
         motion.position.add(displacement);
 
+        // where the player can actually look:
         // limit the tilt at ±0.4 radians
         motion.rotation.x = Math.max(-0.4, Math.min (0.4, motion.rotation.x));
         // wrap horizontal rotation to 0...2π
