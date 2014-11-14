@@ -4,6 +4,7 @@ var port = process.env.PORT || 3000;
 sticky(function() {
   var crypto = require('crypto');
   var express = require('express');
+  var redisAdapter = require('socket.io-redis');
   var app = express();
   var http = require('http').Server(app);
   var io = require('socket.io')(http);
@@ -16,6 +17,8 @@ sticky(function() {
   var activeGames = {};
   var uidToSid = {};
   var points = {};
+
+  io.adapter(redisAdapter({ host: 'localhost', port: 6379 }));
 
   io.on('connection', function(socket) {
 
