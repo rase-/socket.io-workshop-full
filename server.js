@@ -125,7 +125,7 @@ io.of('/game').on('connection', function(socket) {
 
   socket.on('player:sync', function(data) {
     points[socket.user.id] = data.points;
-    socket.to(socket.room.id).emit('player:sync', { id: socket.user.id, motion:  data.motion, health: data.health, points: data.points, username: data.username });
+    socket.volatile.to(socket.room.id).emit('player:sync', { id: socket.user.id, motion:  data.motion, health: data.health, points: data.points, username: data.username });
   });
 
   socket.on('player:hit', function(playerID) {
