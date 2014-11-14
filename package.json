@@ -9,9 +9,10 @@
   "dependencies": {
     "express": "~4.10.0",
     "jquery": "~2.1.1",
-    "three": "0.69.0",
     "socket.io": "~1.2.0",
-    "socket.io-client": "~1.2.0"
+    "socket.io-client": "~1.2.0",
+    "sticky-session": "^0.1.0",
+    "three": "0.69.0"
   },
   "devDependencies": {
     "browserify": "~6.2.0"
