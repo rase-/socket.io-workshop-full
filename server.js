@@ -99,6 +99,7 @@ sticky(function() {
                 if (err) return;
 
                 var newRoom = JSON.parse(data);
+                if (!newRoom) return;
 
                 redis.hgetall('points', function(err, points) {
                   if (err) return;
