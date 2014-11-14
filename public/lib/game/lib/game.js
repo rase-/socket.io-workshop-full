@@ -250,7 +250,7 @@ Game.prototype.start = function(gameViewportSize, userData, roomData) {
     this.freezeControls = true;
     setTimeout(function() {
       window.location.href = '/';
-    }, 2000);
+    }, 5000);
   }.bind(this));
 
   // Send player data periodically
