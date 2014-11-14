@@ -1,5 +1,6 @@
 var $ = require('jquery');
 var io = require('socket.io-client');
+var Chat = require('./chat');
 var socket = io();
 var roomHtml = $('#template-room').html();
 
@@ -10,6 +11,10 @@ function Lobby(selector) {
   this.$newRoom = this.$node.find('.new-room');
   this.$rooms = this.$node.find('.rooms');
   var self = this;
+
+  this.chat = new Chat(this.$node.find('.chat'), {
+    messageEvent: 'lobby message'
+  });
 
   this.$newRoom.click(function() {
     socket.emit('add room');
@@ -30,7 +35,11 @@ function Lobby(selector) {
       self.$rooms.append(createRoomNode(room));
     });
 
+    self.chat.refresh();
+    self.chat.log('Welcome to the game');
+
     self.$node.show();
+    self.chat.focus();
   });
 
   socket.on('leave lobby', function() {
