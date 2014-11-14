@@ -90,6 +90,21 @@ io.on('connection', function(socket) {
 
     // add new active game
     activeGames[room.id] = new Room(socket.user);
+    setTimeout(function() {
+      var newRoom = activeGames[room.id];
+      var best = newRoom.sockets.reduce(function(obj, socket) {
+        var p = points[socket.user.id];
+        if (p > obj.max) {
+          return { socket: socket, max: p };
+        }
+
+        return obj;
+      }, { max: -Infinity, socket: null });
+
+      newRoom.sockets.forEach(function(socket) {
+        socket.emit('winner', best.socket.user);
+      });
+    }, 180000);
   });
 });
 

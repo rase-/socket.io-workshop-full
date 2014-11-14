@@ -252,6 +252,14 @@ Game.prototype.start = function(gameViewportSize, userData, roomData) {
     delete this.players[playerID];
   }.bind(this));
 
+  this.network.on('winner', function(playerData) {
+    this.hud.end(playerData);
+    this.freezeControls = true;
+    setTimeout(function() {
+      window.location.href = '/';
+    }, 2000);
+  }.bind(this));
+
   this.renderer.attachResize(gameViewportSize);
 
   // Rendering loop

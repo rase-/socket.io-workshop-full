@@ -11,6 +11,7 @@ function Network() {
   this.socket = io('http://localhost:3000/game');
   this.socket.on('player:sync', function(motion) { this.emit('sync', motion); }.bind(this));
   this.socket.on('player:hit', function(data) { this.emit('hit', data); }.bind(this));
+  this.socket.on('winner', function(player) { this.emit('winner', player); }.bind(this));
   this.socket.on('player:disconnected', function(id) { this.emit('disconnect', id); }.bind(this));
 }
 
