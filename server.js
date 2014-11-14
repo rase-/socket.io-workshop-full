@@ -1,5 +1,11 @@
 var sticky = require('sticky-session');
+var cluster = require('cluster');
+var redis = require('redis').createClient();
 var port = process.env.PORT || 3000;
+
+if (cluster.isMaster) {
+  redis.flushdb();
+}
 
 sticky(function() {
   var crypto = require('crypto');
@@ -11,12 +17,6 @@ sticky(function() {
   var redis = require('redis').createClient();
 
   app.use(express.static(__dirname + '/public'));
-
-  var roomMap = {};
-
-  var activeGames = {};
-  var uidToSid = {};
-  var points = {};
 
   io.adapter(redisAdapter({ host: 'localhost', port: 6379 }));
 
@@ -43,15 +43,14 @@ sticky(function() {
     });
 
     socket.on('disconnect', function() {
-      leave(socket);
-
-      if (socket.user) {
-        delete socket.user;
-        redis.decr('num users', function(err, numUsers) {
-          if (err) return;
-          io.emit('num users', numUsers);
-        });
-      }
+      leave(socket, function() {
+        if (socket.user) {
+          delete socket.user;
+          redis.decr('num users', function(err, numUsers) {
+            io.emit('num users', numUsers);
+          });
+        }
+      });
     });
 
     socket.on('message', function(message) {
@@ -67,10 +66,11 @@ sticky(function() {
       if (!socket.user) return;
 
       var room = new Room(socket.user);
-      if (roomMap[room.id]) return;
 
-      roomMap[room.id] = room;
-      join(socket, room.id);
+      redis.hsetnx('rooms', room.id, JSON.stringify(room), function(err, result) {
+        if (err || !result) return;
+        join(socket, room.id);
+      });
     });
 
     socket.on('join room', function(roomId) {
@@ -87,34 +87,51 @@ sticky(function() {
     socket.on('start game', function() {
       if (!socket.user) return;
 
-      var room = roomMap[socket.roomId];
-      if (!room) return;
+      redis.hget('rooms', socket.roomId, function(err, data) {
+        if (err) return;
 
-      // check the game starter by owner
-      var i = room.sockets.indexOf(socket);
-      if (0 !== i) return;
+        var room = JSON.parse(data);
 
-      delete roomMap[room.id];
-      io.in(room.id).emit('game started', room);
-      socket.broadcast.to('lobby').emit('room removed', room.id);
+        // check the game started by owner
+        if (!room.users.length || room.users[0].id !== socket.user.id) return;
 
-      // add new active game
-      activeGames[room.id] = new Room(socket.user);
-      setTimeout(function() {
-        var newRoom = activeGames[room.id];
-        var best = newRoom.sockets.reduce(function(obj, socket) {
-          var p = points[socket.user.id];
-          if (p > obj.max) {
-            return { socket: socket, max: p };
-          }
+        redis.hdel('rooms', room.id, function(err) {
+          if (err) return;
 
-          return obj;
-        }, { max: -Infinity, socket: null });
+          io.in(room.id).emit('game started', room);
+          socket.broadcast.to('lobby').emit('room removed', room.id);
 
-        newRoom.sockets.forEach(function(socket) {
-          socket.emit('winner', best.socket.user);
+          // add new active game
+          redis.hset('active games', room.id, JSON.stringify(new Room(socket.user)), function(err) {
+            if (err) return;
+
+            setTimeout(function() {
+              redis.hget('active games', room.id, function(err, data) {
+                if (err) return;
+                if (err) return;
+
+                var newRoom = JSON.parse(data);
+                if (!newRoom) return;
+
+                redis.hgetall('points', function(err, points) {
+                  if (err) return;
+
+                  var best = newRoom.users.reduce(function(obj, user) {
+                    var p = parseInt(points[user.id], 10);
+                    if (p > obj.max) {
+                      return { user: user, max: p };
+                    }
+
+                    return obj;
+                  }, { max: -Infinity, user: null });
+
+                  io.of('/game').emit('winner', best.user);
+                });
+              });
+            }, 180000);
+          });
         });
-      }, 180000);
+      });
     });
   });
 
@@ -122,28 +139,38 @@ sticky(function() {
     socket.on('join', function(data) {
       socket.user = data.userData;
 
-      var room = activeGames[data.roomData.id];
-      socket.room = room;
+      redis.hget('active games', data.roomData.id, function(err, _data) {
+        if (err) return;
+        var room = JSON.parse(_data);
+        socket.room = room;
 
-      socket.join(data.roomData.id);
-      uidToSid[socket.user.id] = socket.id;
+        socket.join(data.roomData.id);
+        redis.hset('uid to sid', socket.user.id, socket.id);
 
-      activeGames[data.roomData.id].sockets.push(socket);
+        room.users.push(socket.user);
+
+        redis.hset('active games', data.roomData.id, JSON.stringify(room));
+      });
     });
 
     socket.on('player:sync', function(data) {
-      points[socket.user.id] = data.points;
+      if (!socket.user || !socket.room) return;
+
+      redis.hset('points', socket.user.id, data.points);
       socket.to(socket.room.id).emit('player:sync', { id: socket.user.id, motion:  data.motion, health: data.health, points: data.points, username: data.username });
     });
 
     socket.on('player:hit', function(playerID) {
-      socket.to(uidToSid[playerID]).emit('player:hit', { damage: 10 });
+      redis.hget('uid to sid', playerID, function(err, sid) {
+        if (err) return;
+        socket.to(sid).emit('player:hit', { damage: 10 });
+      });
     });
 
     socket.on('disconnect', function() {
       socket.to(socket.room.id).emit('player:disconnected', socket.user.id);
-      delete uidToSid[socket.user.id];
-      delete activeGames[socket.room.id];
+      redis.hdel('uid to sid', socket.user.id);
+      redis.hdel('active games', socket.room.id);
       socket.leave(socket.room.id);
       socket.room = null;
     });
@@ -153,95 +180,111 @@ sticky(function() {
     return crypto.randomBytes(16).toString('hex');
   }
 
-  function rooms() {
-    return Object.keys(roomMap).map(function(roomId) {
-      return roomMap[roomId];
+  function rooms(callback) {
+    redis.hgetall('rooms', function(err, roomMap) {
+      if (err) return callback(err);
+
+      var rooms = Object.keys(roomMap || {}).map(function(roomId) {
+        return JSON.parse(roomMap[roomId]);
+      });
+      callback(null, rooms);
     });
   }
 
   function joinLobby(socket) {
-    leave(socket);
-
-    socket.join('lobby', function(err) {
+    leave(socket, function(err) {
       if (err) return;
 
-      socket.roomId = 'lobby';
-      socket.emit('join lobby', rooms());
+      socket.join('lobby', function(err) {
+        if (err) return;
+
+        socket.roomId = 'lobby';
+        rooms(function(err, rooms) {
+          socket.emit('join lobby', rooms);
+        });
+      });
     });
   }
 
   function join(socket, roomId) {
-    var room = roomMap[roomId];
-    if (!room) return;
-
-    leave(socket);
-
-    socket.join(roomId, function(err) {
+    redis.hget('rooms', roomId, function(err, data) {
       if (err) return;
 
-      var room = roomMap[roomId];
-      if (!room) return;
-      if (!~room.sockets.indexOf(socket)) {
-        room.sockets.push(socket);
-      }
+      var room = JSON.parse(data);
 
-      socket.roomId = roomId;
-      socket.emit('join room', room);
-      socket.broadcast.to('lobby').emit('room updated', room);
-      socket.broadcast.to(roomId).emit('user joined', socket.user);
+      leave(socket);
+
+      socket.join(room.id, function(err) {
+        if (err) return;
+
+        room.users.push(socket.user);
+
+        redis.hset('rooms', room.id, JSON.stringify(room), function(err) {
+          if (err) return;
+
+          socket.roomId = room.id;
+          socket.emit('join room', room);
+          socket.broadcast.to('lobby').emit('room updated', room);
+          socket.broadcast.to(room.id).emit('user joined', socket.user);
+        });
+      });
     });
   }
 
-  function leave(socket) {
+  function leave(socket, callback) {
+    callback = callback || function() {};
+
     var roomId = socket.roomId;
-    if (!roomId) return;
+    if (!roomId) return callback();
 
     socket.leave(roomId);
     socket.roomId = null;
 
     if ('lobby' === roomId) {
       socket.emit('leave lobby');
+      callback()
       return;
     }
 
-    var room = roomMap[roomId];
-    if (!room) return;
+    socket.emit('leave room');
 
-    var i = room.sockets.indexOf(socket);
-    if (!~i) return;
-    room.sockets.splice(i, 1);
-    socket.emit('leave room', room);
+    redis.hget('rooms', roomId, function(err, data) {
+      if (err) return callback(err);
 
-    // If creator leaves destroy room
-    if (0 === i) {
-      delete roomMap[roomId];
+      var room = JSON.parse(data);
+      if (!room) return callback();
 
-      socket.broadcast.to('lobby').emit('room removed');
-      socket.broadcast.to(roomId).emit('room closed');
+      var index = -1;
+      room.users.some(function(user, i, users) {
+        if (user.id === socket.user.id) {
+          users.splice(i, 1);
+          index = i;
+          return true;
+        }
+      });
+      if (!~index) return callback();
 
-      // force remaining sockets to join the lobby
-      room.sockets.forEach(joinLobby)
-    } else {
-      socket.broadcast.to('lobby').emit('room changed', room);
-      socket.broadcast.to(roomId).emit('user left', socket.user);
-    }
+      // If creator leaves destroy room
+      if (index === 0) {
+        redis.hdel('rooms', room.id);
+
+        socket.broadcast.to('lobby').emit('room removed');
+        socket.broadcast.to(roomId).emit('room closed');
+      } else {
+        redis.hset('rooms', roomId, JSON.stringify(room));
+
+        socket.broadcast.to('lobby').emit('room changed', room);
+        socket.broadcast.to(roomId).emit('user left', socket.user);
+      }
+      callback()
+    });
   }
 
   function Room(user) {
     this.id = user.id;
     this.name = user.username + '\'s game';
-    this.sockets = [];
+    this.users = [];
   }
-
-  Room.prototype.toJSON = function() {
-    return {
-      id: this.id,
-      name: this.name,
-      users: this.sockets.map(function(socket) {
-        return socket.user;
-      })
-    };
-  };
 
   return http;
 }).listen(port, function() {
