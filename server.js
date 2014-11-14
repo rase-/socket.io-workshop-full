@@ -133,8 +133,11 @@ io.of('/game').on('connection', function(socket) {
   });
 
   socket.on('disconnect', function() {
-    delete uidToSid[socket.user.id];
     socket.to(socket.room.id).emit('player:disconnected', socket.user.id);
+    delete uidToSid[socket.user.id];
+    delete activeGames[socket.room.id];
+    socket.leave(socket.room.id);
+    socket.room = null;
   });
 });
 
