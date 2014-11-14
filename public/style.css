@@ -221,9 +221,12 @@ ul {
 .page .sidebar button {
   font-size: 17.5px;
   height: 43px;
+  overflow: hidden;
   padding: 11px 11px;
-  width: 100%;
   position: absolute;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
 }
 
 /* Messages */
