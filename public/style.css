@@ -1,0 +1,321 @@
+/* Fix user-agent */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-family:
+    "HelveticaNeue-Light",
+    "Helvetica Neue Light",
+    "Helvetica Neue",
+    Helvetica,
+    Arial,
+    "Lucida Grande",
+    sans-serif;
+  font-weight: 300;
+  -webkit-font-smoothing: antialiased;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+ul {
+  list-style: none;
+}
+
+/* Buttons */
+
+.btn {
+  border: none;
+  color: #fff;
+  cursor: pointer;
+}
+
+.btn[disabled],
+.btn[disabled]:hover {
+  background-color: #ccc;
+}
+
+.btn-info {
+  background-color: #5bc0de;
+  color: #fff;
+}
+
+.btn-info:hover {
+  background-color: #31b0d5;
+}
+
+.btn-danger {
+  background-color: #d9534f;
+  color: #fff;
+}
+
+.btn-danger:hover {
+  background-color: #c9302c;
+}
+
+/* Header */
+
+.full-screen .header {
+  display: none;
+}
+
+.header {
+  box-shadow: 0 1px 5px rgba(0,0,0,.3);
+  height: 40px;
+  padding: 0;
+  position: absolute;
+  width: 100%;
+  text-align: center;
+}
+
+.header .title {
+  margin: 0;
+  padding: 5px 10px;;
+}
+
+.header .state {
+  position: absolute;
+  top: 10px;
+  right: 20px;
+}
+
+.header .back {
+  display: none;
+  font-size: 80%;
+  height: 40px;
+  left: 0;
+  position: absolute;
+  padding: 5px 10px;;
+}
+
+/* Pages */
+
+.full-screen .pages {
+  padding-top: 0;
+}
+
+.pages {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  padding-top: 40px;
+  width: 100%;
+}
+
+.page {
+  display: none;
+  height: 100%;
+  width: 100%;
+  position: relative;
+}
+
+/* Login Page */
+
+.login.page {
+  margin: 0;
+  padding: 0;
+}
+
+.login.page form {
+  height: 100px;
+  margin-top: -100px;
+  position: absolute;
+  text-align: center;
+  top: 50%;
+  width: 100%;
+}
+
+.login.page .title {
+  font-size: 200%;
+  font-weight: 100;
+}
+
+.login.page form input.username {
+  background-color: transparent;
+  border: none;
+  border-bottom: 2px solid #000;
+  font-size: 200%;
+  font-weight: 100;
+  letter-spacing: 3px;
+  outline: none;
+  padding-bottom: 15px;
+  text-align: center;
+  width: 400px;
+}
+
+/* Lobby page */
+
+.lobby.page .rooms {
+  font-size: 150%;
+  height: 100%;
+  margin: 0;
+  padding: 40px 0px 0px 0px;
+}
+
+.lobby.page .rooms .room {
+  border-bottom: 2px solid #eee;
+  cursor: pointer;
+  padding: 10px 20px
+}
+
+.lobby.page .rooms .room:hover {
+  background-color: #eee;
+}
+
+.lobby.page .rooms .room .badge {
+  display: inline-block;
+  float: right;
+  min-width: 10px;
+  padding: 3px 7px;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  color: #fff;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+  background-color: #777;
+  border-radius: 10px;
+  margin-top: 5px; /* FIXME */
+}
+
+/* Room page */
+
+.room.page .users {
+  font-size: 150%;
+  height: 100%;
+  margin: 0;
+  padding: 10px 20px;
+}
+
+.room.page.own .users {
+  padding-top: 53px;
+}
+
+.room.page .start-game {
+  display: none;
+}
+
+/* Chat, Sidebar */
+
+.page .chat {
+  float: left;
+  height: 100%;
+  width: 75%;
+  position: relative;
+}
+
+.page .sidebar {
+  float: right;
+  height: 100%;
+  width: 25%;
+  position: relative;
+  text-overflow: ellipsis;
+}
+
+.page .sidebar button {
+  font-size: 17.5px;
+  height: 43px;
+  padding: 11px 11px;
+  width: 100%;
+  position: absolute;
+}
+
+/* Messages */
+
+.messages {
+  border-right: 1px solid #eee;
+  font-size: 150%;
+  height: 100%;
+  margin: 0;
+  overflow-y: auto;
+  padding: 10px 20px 50px 20px;
+}
+
+.messages .username {
+  float: left;
+  font-weight: 700;
+  overflow: hidden;
+  padding-right: 15px;
+  text-align: right;
+}
+
+.messages .log {
+  color: gray;
+  font-size: 80%;
+  text-align: center;
+}
+
+input.message {
+  bottom: 0;
+  font-size: 100%;
+  height: 40px;
+  outline: none;
+  padding-left: 10px;
+  position: absolute;
+  width: 100%;
+}
+
+body.game {
+  margin: 0px;
+  overflow: hidden;
+  text-align: center;
+}
+
+#a {
+  text-align: center;
+  position: absolute;
+  top: 50%;
+  left: 0px;
+  width: 100%;
+  height: 1px;
+  overflow: visible;
+  visibility: visible;
+  display: block
+}
+
+#b {
+  margin-left: -30px;
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  width: 60px;
+  height: 60px;
+  visibility: visible
+}
+
+.hud #health {
+  position: absolute;
+  bottom: 40px;
+  left: 20px;
+  font-size: 20px;
+  color: white;
+}
+
+.hud #points {
+  position: absolute;
+  bottom: 100px;
+  left: 20px;
+  font-size: 20px;
+  color: white;
+}
+
+.hud #hurtOverlay {
+  background-color: red;
+  display: none;
+  left: 0;
+  opacity: 0.15;
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  z-index: 1002;
+  width: 100%;
+  height: 100%;
+}
+
+

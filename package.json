@@ -1,0 +1,19 @@
+{
+  "name": "socket.io-workshop-full",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "npm run build && node server.js",
+    "build": "browserify public/index.js > public/bundle.js"
+  },
+  "dependencies": {
+    "express": "~4.10.0",
+    "jquery": "~2.1.1",
+    "three": "0.69.0",
+    "socket.io": "~1.2.0",
+    "socket.io-client": "~1.2.0"
+  },
+  "devDependencies": {
+    "browserify": "~6.2.0"
+  }
+}
