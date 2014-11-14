@@ -69,6 +69,11 @@ function Room(selector) {
     self.$users.find('.user[data-id=' + user.id + ']').remove();
     self.$startGame.prop('disabled', !self.startable());
   });
+
+  socket.on('room closed', function(room) {
+    alert('The game was closed');
+    self.$node.hide();
+  });
 }
 
 Room.prototype.startable = function() {
