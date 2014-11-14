@@ -1,6 +1,8 @@
 var THREE = require('three');
 var $ = require('jquery');
 
+var Network = require('./network');
+
 // Rendering engine
 var Renderer = require('./renderer');
 var HUD = require('./hud');
@@ -205,6 +207,9 @@ Game.prototype.start = function(gameViewportSize, userData, roomData) {
 
   // Players
   this.players = {};
+
+  this.network = new Network();
+  this.network.join(userData, roomData);
 
   // Initialize HUD
   this.hud = new HUD(this.hero, this.players);

@@ -11,6 +11,7 @@ var roomMap = {};
 var numUsers = 0;
 
 var activeGames = {};
+var uidToSid = {};
 
 io.on('connection', function(socket) {
 
@@ -78,16 +79,31 @@ io.on('connection', function(socket) {
     var room = roomMap[socket.roomId];
     if (!room) return;
 
-      // check the game starter by owner
-      var i = room.sockets.indexOf(socket);
-      if (0 !== i) return;
+    // check the game starter by owner
+    var i = room.sockets.indexOf(socket);
+    if (0 !== i) return;
 
-      delete roomMap[room.id];
-      io.in(room.id).emit('game started', room);
-      socket.broadcast.to('lobby').emit('room removed', room.id);
+    delete roomMap[room.id];
+    io.in(room.id).emit('game started', room);
+    socket.broadcast.to('lobby').emit('room removed', room.id);
 
-      // add new active game
-      activeGames[room.id] = new Room(socket.user);
+    // add new active game
+    activeGames[room.id] = new Room(socket.user);
+  });
+});
+
+io.of('/game').on('connection', function(socket) {
+  socket.on('join', function(data) {
+    console.log('aoe');
+    socket.user = data.userData;
+
+    var room = activeGames[data.roomData.id];
+    socket.room = room;
+
+    socket.join(data.roomData.id);
+    uidToSid[socket.user.id] = socket.id;
+
+    activeGames[data.roomData.id].sockets.push(socket);
   });
 });
 
