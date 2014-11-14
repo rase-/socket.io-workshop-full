@@ -1,5 +1,24 @@
 # socket.io-workshop-full
 
+## Game assets
+### Shotgun sounds
+
+(c) by Michel Baradari apollo-music.de
+
+Licensed under CC BY 3.0 http://creativecommons.org/licenses/by/3.0/
+
+Hosted on opengameart.org
+
+### Models
+Copyright (C) 2006-2008  by W. Sitters
+
+This model is free software, and has an double licence.
+You can redistribute it and/or modify it under the terms of the 
+GNU General Public License as published by the Free Software Foundation, 
+either version 2 of the License, or any later version,
+or you can redistribut it and/or modify it under the terms of
+creative commons license CC-Attribution/by (http://creativecommons.org/licenses/by/3.0/).
+
 ## Chat
 
 The first thing an user has to do is defining a username which you are called with through the entire game.
