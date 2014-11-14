@@ -56,6 +56,19 @@ function Room(selector) {
     self.room = null;
     self.$node.hide();
   });
+
+  socket.on('user left', function(user) {
+    self.room.users.some(function(u, i) {
+      if (user.id !== u.id) return;
+
+      self.room.users.splice(i, 1);
+      return true;
+    });
+
+    self.chat.log(user.username + ' left');
+    self.$users.find('.user[data-id=' + user.id + ']').remove();
+    self.$startGame.prop('disabled', !self.startable());
+  });
 }
 
 Room.prototype.startable = function() {

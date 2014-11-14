@@ -137,6 +137,20 @@ function leave(socket) {
   if (!~i) return;
   room.sockets.splice(i, 1);
   socket.emit('leave room', room);
+
+  // If creator leaves destroy room
+  if (0 === i) {
+    delete roomMap[roomId];
+
+    socket.broadcast.to('lobby').emit('room removed');
+    socket.broadcast.to(roomId).emit('room closed');
+
+    // force remaining sockets to join the lobby
+    room.sockets.forEach(joinLobby)
+  } else {
+    socket.broadcast.to('lobby').emit('room changed', room);
+    socket.broadcast.to(roomId).emit('user left', socket.user);
+  }
 }
 
 function Room(user) {
